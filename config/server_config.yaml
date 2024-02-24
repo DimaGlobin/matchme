@@ -1,0 +1,3 @@
+env: "local" # dev, local, prod
+http-server: 
+  address: "localhost:8082"
