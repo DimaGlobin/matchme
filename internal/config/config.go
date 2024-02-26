@@ -3,17 +3,30 @@ package config
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Config struct {
-	Env        string `yaml:"env" env-default:"local"`
-	HTTPServer `yaml:"http_server"`
+	Env           string `yaml:"env" env-default:"local"`
+	HTTPServer    `yaml:"http_server"`
+	UsersDBConfig `yaml:"users_db"`
 }
 
 type HTTPServer struct {
-	Address string `yaml:"addres" env-default:"localhost:8080"`
+	Address     string        `yaml:"address" env-default:"localhost:8080"`
+	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
+	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
+}
+
+type UsersDBConfig struct {
+	Host     string `yaml:"host"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	DBName   string `yaml:"dbname"`
+	Port     int    `yaml:"port"`
+	SSLMode  string `yaml:"sslmode"`
 }
 
 func MustLoad(configPath string) *Config {
@@ -31,6 +44,9 @@ func MustLoad(configPath string) *Config {
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
 		log.Fatalf("Cannot read config: %s", configPath)
 	}
+
+	// dir, _ := os.Getwd()
+	// fmt.Println("Config: ", cfg, "\nConfigPath: ", configPath, "\nPWD: ", dir)
 
 	return &cfg
 }

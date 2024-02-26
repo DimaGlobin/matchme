@@ -3,7 +3,7 @@ package storage
 import (
 	"fmt"
 
-	config "github.com/DimaGlobin/matchme/internal/storage/users_storage/config"
+	"github.com/DimaGlobin/matchme/internal/config"
 	models "github.com/DimaGlobin/matchme/internal/storage/users_storage/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
