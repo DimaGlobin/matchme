@@ -12,7 +12,9 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func (s *Server) Run(cfg *config.Config, router chi.Router) error {
+func NewHTTPServer(cfg *config.Config, router chi.Router) *Server {
+	var s Server
+
 	s.httpServer = &http.Server{
 		Addr:           cfg.Address,
 		Handler:        router,
@@ -22,6 +24,10 @@ func (s *Server) Run(cfg *config.Config, router chi.Router) error {
 		IdleTimeout:    cfg.IdleTimeout,
 	}
 
+	return &s
+}
+
+func (s *Server) Run() error {
 	return s.httpServer.ListenAndServe()
 }
 

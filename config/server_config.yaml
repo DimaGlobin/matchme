@@ -1,12 +1,12 @@
 env: "local" # dev, local, prod
 http_server: 
-  address: "localhost:8082"
+  address: "localhost:8084"
   timeout: 4s
   idle_tiomeout: 30s
 users_db:
   host: "localhost" 
   user: "postgres" 
   password: "qwerty" 
-  dbname: "postgres" 
+  dbname: "matchme_db" 
   port: 5436 
   sslmode: "disable"
