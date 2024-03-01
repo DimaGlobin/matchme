@@ -8,9 +8,9 @@ run:
 	go run cmd/matchme/main.go
 
 migrate-db-up:
-	migrate -path ./internal/schema/migrations -database 'postgres://postgres:qwerty@localhost:5436/postgres?sslmode=disable' up
+	migrate -path ./internal/schema/migrations -database 'postgres://postgres:qwerty@localhost:5436/matchme_db?sslmode=disable' up
 
 migrate-db-down:
-	migrate -path ./internal/schema/migrations -database 'postgres://postgres:qwerty@localhost:5436/postgres?sslmode=disable' down
+	migrate -path ./internal/schema/migrations -database 'postgres://postgres:qwerty@localhost:5436/matchme_db?sslmode=disable' down
 
 .PHONY: postgresinit, postgresrm, run, migrate-db-up, migrate-db-down 

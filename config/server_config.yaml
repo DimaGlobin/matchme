@@ -8,5 +8,5 @@ users_db:
   user: "postgres" 
   password: "qwerty" 
   dbname: "matchme_db" 
-  port: 5436 
+  port: 5436
   sslmode: "disable"

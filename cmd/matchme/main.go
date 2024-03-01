@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	stdlog "log"
 	"os"
 	"os/signal"
@@ -14,7 +15,9 @@ import (
 	logger "github.com/DimaGlobin/matchme/internal/lib/logger/common"
 	"github.com/DimaGlobin/matchme/internal/lib/logger/sl"
 	"github.com/DimaGlobin/matchme/internal/server"
-	"github.com/go-chi/chi/v5"
+	"github.com/DimaGlobin/matchme/internal/server/router"
+	"github.com/DimaGlobin/matchme/internal/service"
+	"github.com/DimaGlobin/matchme/internal/storage"
 	"github.com/joho/godotenv"
 )
 
@@ -32,6 +35,15 @@ func main() {
 	cfg := config.MustLoad("./config/server_config.yaml")
 	log := logger.NewCommonLogger(cfg.Env)
 
+	db, err := storage.NewPostgresDB(cfg)
+	if err != nil {
+		fmt.Println(cfg, err)
+		stdlog.Fatal("Cannot connect to db")
+	}
+
+	storage := storage.NewStorage(db)
+	service := service.NewService(*storage)
+
 	log.Info(
 		"starting url-shortener",
 		slog.String("env", cfg.Env),
@@ -47,7 +59,7 @@ func main() {
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
-	router := chi.NewRouter()
+	router := router.NewRouter(log, service)
 	srv := server.NewHTTPServer(cfg, router)
 
 	done := make(chan os.Signal, 1)
