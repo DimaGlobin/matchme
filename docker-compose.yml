@@ -1,0 +1,33 @@
+version: '3.8'
+
+networks:
+  matchme_network:
+    driver: bridge
+
+services:
+  matchme-app:
+    build: ./
+    command: ./wait-for-postgres.sh db ./main
+    ports:
+      - 8084:8084
+    depends_on:
+      - db
+    environment:
+      - DB_PASSWORD=qwerty
+    networks:
+      - matchme_network
+
+  db:
+    restart: always
+    image: postgres:latest
+    volumes:
+      - db-volume:/var/lib/postgresql/data 
+    environment:
+      - POSTGRES_PASSWORD=qwerty
+    ports:
+      - 5436:5432
+    networks:
+      - matchme_network
+    
+volumes:
+  db-volume:
