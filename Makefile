@@ -4,7 +4,7 @@ postgresinit:
 postgresrm:
 	docker rm -f matchme_db
 
-run:
+run-local:
 	go run cmd/matchme/main.go
 
 migrate-db-up:
@@ -17,4 +17,7 @@ run-docker:
 	docker build -t matchme ./
 	docker run --name=matchme-web-app --rm -p 8084:8084 matchme
 
-.PHONY: postgresinit, postgresrm, run, migrate-db-up, migrate-db-down, run-docker, create-network
+run:
+	docker compose up --build matchme-app
+
+.PHONY: postgresinit, postgresrm, run-local, migrate-db-up, migrate-db-down, run-docker, create-network, run

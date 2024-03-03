@@ -20,8 +20,8 @@ services:
   db:
     restart: always
     image: postgres:latest
-    # volumes:
-    #   - ./.database/postgres/data:/var/lib/postgresql/data TODO:разобраться с этим бредом
+    volumes:
+      - db-volume:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=qwerty
     ports:
@@ -29,3 +29,5 @@ services:
     networks:
       - matchme_network
     
+volumes:
+  db-volume:
