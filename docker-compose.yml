@@ -21,7 +21,7 @@ services:
     restart: always
     image: postgres:latest
     volumes:
-      - db-volume:/var/lib/postgresql/data 
+      - db-volume:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=qwerty
     ports:
