@@ -5,6 +5,7 @@ import (
 	"fmt"
 	stdlog "log"
 	"os"
+	"os/exec"
 	"os/signal"
 	"syscall"
 	"time"
@@ -39,6 +40,13 @@ func main() {
 	if err != nil {
 		fmt.Println(cfg, err)
 		stdlog.Fatal("Cannot connect to db")
+	}
+
+	cmd := exec.Command("migrate", "-path", "./internal/schema/migrations", "-database", "postgres://postgres:qwerty@db:5432/postgres?sslmode=disable", "up")
+	err = cmd.Run()
+	if err != nil {
+		stdlog.Fatal("Cannot migrate DB")
+		return
 	}
 
 	storage := storage.NewStorage(db)

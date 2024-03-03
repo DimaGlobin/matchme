@@ -8,9 +8,13 @@ run:
 	go run cmd/matchme/main.go
 
 migrate-db-up:
-	migrate -path ./internal/schema/migrations -database 'postgres://postgres:qwerty@localhost:5436/matchme_db?sslmode=disable' up
+	migrate -path ./internal/schema/migrations -database 'postgres://postgres:qwerty@db:5432/postgres?sslmode=disable' up
 
 migrate-db-down:
 	migrate -path ./internal/schema/migrations -database 'postgres://postgres:qwerty@localhost:5436/matchme_db?sslmode=disable' down
 
-.PHONY: postgresinit, postgresrm, run, migrate-db-up, migrate-db-down 
+run-docker:
+	docker build -t matchme ./
+	docker run --name=matchme-web-app --rm -p 8084:8084 matchme
+
+.PHONY: postgresinit, postgresrm, run, migrate-db-up, migrate-db-down, run-docker, create-network
