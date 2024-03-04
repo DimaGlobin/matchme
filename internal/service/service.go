@@ -8,6 +8,8 @@ import (
 
 type UsersService interface {
 	CreateUser(user *model.User) (int, error)
+	GenerateToken(login, password string) (string, error)
+	ParseToken(token string) (int, error)
 }
 
 var _ UsersService = (*users_service.UsersService)(nil)

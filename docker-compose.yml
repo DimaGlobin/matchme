@@ -5,7 +5,7 @@ networks:
     driver: bridge
 
 services:
-  matchme-app:
+  matchme-app: # TODO:Change names
     build: ./
     command: ./wait-for-postgres.sh db ./main
     ports:
@@ -20,8 +20,8 @@ services:
   db:
     restart: always
     image: postgres:latest
-    volumes:
-      - db-volume:/var/lib/postgresql/data
+    # volumes:
+    #   - db-volume:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=qwerty
     ports:

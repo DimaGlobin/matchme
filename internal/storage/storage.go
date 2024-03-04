@@ -8,7 +8,7 @@ import (
 
 type UsersStorage interface {
 	CreateUser(user *model.User) (int, error)
-	GetUser(email string, password string) (*model.User, error)
+	GetUser(email string) (*model.User, error)
 }
 
 var _ UsersStorage = (*users_storage.UserPostgres)(nil)
