@@ -26,11 +26,20 @@ func NewRouter(log *slog.Logger, srv *service.Service) chi.Router {
 		w.Write([]byte("pong"))
 	})
 
+	//-----------------Authorization---------------------------
+
 	router.Post("/sign_up", users_handler.NewSignUpHandler(log, srv))
 	router.Post("/sign_in", users_handler.NewSignInHandler(log, srv))
+	
+
+	//---------------------------------------------------------
+
+	//--------------------Private------------------------------
 
 	router.Mount("/api", NewApiRouter(log, srv))
 
+	//--------------------------------------------------------
+	
 	return router
 }
 

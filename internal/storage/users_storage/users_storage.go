@@ -1,8 +1,6 @@
 package users_storage
 
 import (
-	"fmt"
-
 	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -29,7 +27,7 @@ func (u *UserPostgres) CreateUser(user *model.User) (int, error) {
 
 func (u *UserPostgres) GetUser(email string) (*model.User, error) {
 	user := &model.User{}
-	fmt.Printf("email: %s, password: %s", email)
+	// fmt.Printf("email: %s, password: %s", email)
 	query := "SELECT * FROM users WHERE email=$1"
 	err := u.db.Get(user, query, email)
 

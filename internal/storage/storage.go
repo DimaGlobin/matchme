@@ -11,6 +11,11 @@ type UsersStorage interface {
 	GetUser(email string) (*model.User, error)
 }
 
+type PhotoStorage interface {
+	AddPhoto() error
+	DeletePhoto()
+}
+
 var _ UsersStorage = (*users_storage.UserPostgres)(nil)
 
 type Storage struct {
