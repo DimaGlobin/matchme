@@ -13,24 +13,36 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-func NewSignUpHandler(log *slog.Logger, srv *service.Service) http.HandlerFunc {
+type SignUpHandler struct {
+	logger  *slog.Logger
+	service *service.Service
+}
+
+func NewSignUpHandler(log *slog.Logger, srv *service.Service) *SignUpHandler {
+	return &SignUpHandler{
+		logger:  log,
+		service: srv,
+	}
+}
+
+func (s *SignUpHandler) Handle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := &model.User{}
 
-		log := log.With(
+		log := s.logger.With(
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
 		err := render.DecodeJSON(r.Body, user)
 		if err != nil {
 			msg := "Unable to decode request body"
-			log.Error(msg)
-			api.Respond(w, r, http.StatusBadRequest, "")
+			log.Error(msg, sl.Err(err))
+			api.Respond(w, r, http.StatusBadRequest, msg)
 
 			return
 		}
 
-		id, err := srv.UsersService.CreateUser(user)
+		id, err := s.service.UsersService.CreateUser(user)
 		if err != nil {
 			msg := "Unable to create user"
 			log.Error(msg, sl.Err(err))

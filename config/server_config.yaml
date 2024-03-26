@@ -10,3 +10,8 @@ users_db:
   dbname: "postgres" 
   port: 5432
   sslmode: "disable"
+files_storage:
+  endpoint: "nginx:9000"
+  access_key: "minio"
+  secret_key: "minio123"
+  bucket_name: "bucket1"

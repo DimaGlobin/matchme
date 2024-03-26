@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	Env           string `yaml:"env" env-default:"local"`
-	HTTPServer    `yaml:"http_server"`
-	UsersDBConfig `yaml:"users_db"`
+	Env                string `yaml:"env" env-default:"local"`
+	HTTPServer         `yaml:"http_server"`
+	UsersDBConfig      `yaml:"users_db"`
+	FilesStorageConfig `yaml:"files_storage"`
 }
 
 type HTTPServer struct {
@@ -27,6 +28,13 @@ type UsersDBConfig struct {
 	DBName   string `yaml:"dbname"`
 	Port     int    `yaml:"port"`
 	SSLMode  string `yaml:"sslmode"`
+}
+
+type FilesStorageConfig struct {
+	Endpoint   string `yaml:"endpoint"`
+	AccessKey  string `yaml:"access_key"`
+	ScretKey   string `yaml:"secret_key"`
+	Bucketname string `yaml:"bucket_name"`
 }
 
 func MustLoad(configPath string) *Config {

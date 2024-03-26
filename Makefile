@@ -18,6 +18,9 @@ run-docker:
 	docker run --name=matchme-web-app --rm -p 8084:8084 matchme
 
 run:
-	docker compose up --build matchme-app
+	docker compose up --build app
 
-.PHONY: postgresinit, postgresrm, run-local, migrate-db-up, migrate-db-down, run-docker, create-network, run
+clean:
+	docker-compose down
+
+.PHONY: postgresinit, postgresrm, run-local, migrate-db-up, migrate-db-down, run-docker, create-network, run, clean
