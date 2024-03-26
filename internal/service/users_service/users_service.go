@@ -25,7 +25,9 @@ type tokenClaims struct {
 }
 
 func NewUsersService(storage storage.UsersStorage) *UsersService {
-	return &UsersService{usersStorage: storage}
+	return &UsersService{
+		usersStorage: storage,
+	}
 }
 
 func (u *UsersService) CreateUser(user *model.User) (int, error) {

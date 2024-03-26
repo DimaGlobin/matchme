@@ -19,7 +19,7 @@ import (
 	"github.com/DimaGlobin/matchme/internal/server/router"
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/DimaGlobin/matchme/internal/storage"
-	"github.com/DimaGlobin/matchme/internal/storage/users_storage"
+	"github.com/DimaGlobin/matchme/internal/storage/files_storage"
 	"github.com/joho/godotenv"
 )
 
@@ -37,7 +37,7 @@ func main() {
 	cfg := config.MustLoad("./config/server_config.yaml")
 	log := logger.NewCommonLogger(cfg.Env)
 
-	db, err := users_storage.NewPostgresDB(cfg)
+	db, err := storage.NewPostgresDB(cfg)
 	if err != nil {
 		fmt.Println(cfg, err)
 		stdlog.Fatal("Cannot connect to db")
@@ -50,7 +50,14 @@ func main() {
 		return
 	}
 
-	storage := storage.NewStorage(db)
+	minioClient, err := files_storage.NewMinioClient(cfg)
+	if err != nil {
+		fmt.Println(cfg, err)
+		stdlog.Fatal("Cannot connect to files storage")
+		return
+	}
+
+	storage := storage.NewStorage(db, minioClient)
 	service := service.NewService(*storage)
 
 	log.Info(

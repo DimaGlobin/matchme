@@ -15,7 +15,7 @@ func NewUsersPostgres(db *sqlx.DB) *UserPostgres {
 
 func (u *UserPostgres) CreateUser(user *model.User) (int, error) {
 	var id int
-	query := "INSERT INTO users (email, phone_number, name, password_hash, sex, age, birth_date, city, description, role, max_age) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id"
+	query := "INSERT INTO users (email, phone_number, name, password_hash, sex, age, birth_date, city, description, role, max_age) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING user_id"
 
 	row := u.db.QueryRow(query, user.Email, user.PhoneNumber, user.Name, user.Password, user.Sex, user.Age, user.BirthDate, user.City, user.Description, user.Role, user.MaxAge)
 	if err := row.Scan(&id); err != nil {

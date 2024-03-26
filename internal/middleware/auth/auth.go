@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	userCtx = "userId"
+	UserCtx = "userId"
 )
 
 func New(log *slog.Logger, srv *service.Service) func(next http.Handler) http.Handler {
@@ -54,7 +54,7 @@ func New(log *slog.Logger, srv *service.Service) func(next http.Handler) http.Ha
 				return
 			}
 
-			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), userCtx, userId)))
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), UserCtx, userId)))
 		}
 
 		return http.HandlerFunc(fn)

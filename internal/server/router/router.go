@@ -5,6 +5,7 @@ import (
 
 	"github.com/DimaGlobin/matchme/internal/middleware/auth"
 	"github.com/DimaGlobin/matchme/internal/middleware/logger"
+	"github.com/DimaGlobin/matchme/internal/server/handler/files_handlers"
 	"github.com/DimaGlobin/matchme/internal/server/handler/users_handler"
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -28,9 +29,11 @@ func NewRouter(log *slog.Logger, srv *service.Service) chi.Router {
 
 	//-----------------Authorization---------------------------
 
-	router.Post("/sign_up", users_handler.NewSignUpHandler(log, srv))
-	router.Post("/sign_in", users_handler.NewSignInHandler(log, srv))
-	
+	signInHandler := users_handler.NewSignInHandler(log, srv)
+	signUpHandler := users_handler.NewSignUpHandler(log, srv)
+
+	router.Post("/sign_up", signUpHandler.Handle())
+	router.Post("/sign_in", signInHandler.Handle())
 
 	//---------------------------------------------------------
 
@@ -39,7 +42,7 @@ func NewRouter(log *slog.Logger, srv *service.Service) chi.Router {
 	router.Mount("/api", NewApiRouter(log, srv))
 
 	//--------------------------------------------------------
-	
+
 	return router
 }
 
@@ -52,6 +55,10 @@ func NewApiRouter(log *slog.Logger, srv *service.Service) chi.Router {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("pong"))
 	})
+
+	uploadFileHandler := files_handlers.NewUploadFileHandler(log, srv)
+
+	router.Post("/upload_photo", uploadFileHandler.Handle())
 
 	return router
 }
