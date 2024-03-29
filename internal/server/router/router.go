@@ -56,9 +56,27 @@ func NewApiRouter(log *slog.Logger, srv *service.Service) chi.Router {
 		w.Write([]byte("pong"))
 	})
 
+	//----------------------Users-----------------------------
+
+	getUserHandler := users_handler.NewGetUserHandler(log, srv)
+	updateUserHandler := users_handler.NewUpdateUserHandler(log, srv)
+	deleteUserhandler := users_handler.NewDeleteUserHandler(log, srv)
+
+	router.Route("/users", func(r chi.Router) {
+		r.Get("/{id}", getUserHandler.Handle())
+		r.Get("/", getUserHandler.Handle())
+		r.Put("/", updateUserHandler.Handle())
+		r.Delete("/", deleteUserhandler.Handle())
+	})
+
+	//--------------------------------------------------------
+
+	//-----------------------Photos---------------------------
 	uploadFileHandler := files_handlers.NewUploadFileHandler(log, srv)
 
-	router.Post("/upload_photo", uploadFileHandler.Handle())
-
+	router.Route("/photos", func(r chi.Router) {
+		r.Post("/", uploadFileHandler.Handle())
+	})
+	//--------------------------------------------------------
 	return router
 }

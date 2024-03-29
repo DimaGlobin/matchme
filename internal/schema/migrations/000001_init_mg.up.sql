@@ -35,6 +35,13 @@ CREATE TABLE dislikes (
     creation_date TIMESTAMP default CURRENT_TIMESTAMP
 );
 
+CREATE TABLE matches (
+    match_id SERIAL PRIMARY KEY,
+    user1 INTEGER REFERENCES users (user_id),
+    user2 INTEGER REFERENCES users (user_id),
+    creation_date TIMESTAMP default CURRENT_TIMESTAMP
+);
+
 CREATE TABLE files (
     file_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users (user_id),

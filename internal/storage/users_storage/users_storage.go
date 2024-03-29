@@ -1,6 +1,9 @@
 package users_storage
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -29,7 +32,57 @@ func (u *UserPostgres) GetUser(email string) (*model.User, error) {
 	user := &model.User{}
 	// fmt.Printf("email: %s, password: %s", email)
 	query := "SELECT * FROM users WHERE email=$1"
-	err := u.db.Get(user, query, email)
+	if err := u.db.Get(user, query, email); err != nil {
+		return nil, err
+	}
 
-	return user, err
+	return user, nil
+}
+
+func (u *UserPostgres) GetUserById(id int) (*model.User, error) {
+	user := &model.User{}
+	query := "SELECT * FROM users where user_id=$1"
+	if err := u.db.Get(user, query, id); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (u *UserPostgres) UpdateUser(id int, updates model.Updates) error {
+	query := "UPDATE users SET"
+
+	count := 1
+	var values []interface{}
+	for k, v := range updates {
+		query += " " + k + fmt.Sprintf(" = $%d,", count)
+		switch val := v.(type) {
+		case int:
+			values = append(values, val)
+		case string:
+			values = append(values, val)
+		case float64:
+			values = append(values, int(val))
+		default:
+			return fmt.Errorf("unsupported type: %T", v)
+		}
+		count++
+	}
+
+	query = strings.TrimSuffix(query, ",")
+	values = append(values, id)
+	query += fmt.Sprintf(" WHERE user_id = $%d", len(values))
+
+	// fmt.Printf("query: %v\nvalues: %v", query, values)
+
+	_, err := u.db.Exec(query, values...)
+
+	return err
+}
+
+func (u *UserPostgres) DeleteUser(id int) error {
+	query := "DELETE FROM users WHERE user_id=$1"
+	_, err := u.db.Exec(query, id)
+
+	return err
 }

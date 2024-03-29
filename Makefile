@@ -21,6 +21,6 @@ run:
 	docker compose up --build app
 
 clean:
-	docker-compose down
+	docker-compose down -v --rmi local
 
 .PHONY: postgresinit, postgresrm, run-local, migrate-db-up, migrate-db-down, run-docker, create-network, run, clean

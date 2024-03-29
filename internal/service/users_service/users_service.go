@@ -7,7 +7,7 @@ import (
 
 	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/DimaGlobin/matchme/internal/storage"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,7 +20,7 @@ type UsersService struct {
 }
 
 type tokenClaims struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 	UserId int `json:"user_id"`
 }
 
@@ -52,9 +52,9 @@ func (u *UsersService) GenerateToken(email string, password string) (string, err
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(tokenTTL).Unix(),
-			IssuedAt:  time.Now().Unix(),
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenTTL)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 		user.Id,
 	})
@@ -80,6 +80,18 @@ func (u *UsersService) ParseToken(accessToken string) (int, error) {
 	}
 
 	return claims.UserId, nil
+}
+
+func (u *UsersService) GetuserById(id int) (*model.User, error) {
+	return u.usersStorage.GetUserById(id)
+}
+
+func (u *UsersService) UpdateUser(id int, updates model.Updates) error {
+	return u.usersStorage.UpdateUser(id, updates)
+}
+
+func (u *UsersService) DeleteUser(id int) error {
+	return u.usersStorage.DeleteUser(id)
 }
 
 func generatePasswordHash(password string) (string, error) {
