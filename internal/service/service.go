@@ -11,16 +11,17 @@ import (
 )
 
 type UsersService interface {
-	CreateUser(user *model.User) (int, error)
+	CreateUser(user *model.User) (uint64, error)
 	GenerateToken(login, password string) (string, error)
-	ParseToken(token string) (int, error)
-	GetuserById(id int) (*model.User, error)
-	UpdateUser(id int, updates model.Updates) error
-	DeleteUser(id int) error
+	ParseToken(token string) (uint64, error)
+	GetuserById(id uint64) (*model.User, error)
+	UpdateUser(id uint64, updates model.Updates) error
+	DeleteUser(id uint64) error
 }
 
 type FilesService interface {
-	UploadFile(ctx context.Context, fd *model.FileData, file io.Reader) (int, error)
+	UploadFile(ctx context.Context, fd *model.FileData, file io.Reader) (uint64, error)
+	GetFile(ctx context.Context, fileId, userId uint64) (*model.File, error)
 }
 
 var _ UsersService = (*users_service.UsersService)(nil)

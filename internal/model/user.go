@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	Id           int       `json:"-" db:"user_id"`
+	Id           uint64    `json:"-" db:"user_id"`
 	Email        string    `json:"email" binding:"required" db:"email"`
 	PhoneNumber  string    `json:"phone_number" binding:"reuqired" db:"phone_number"`
 	Name         string    `json:"name" binding:"required" db:"name"`
@@ -25,4 +25,3 @@ type User struct {
 	// Latitude    float64   `db:"latitude"`
 	// Longitude   float64   `db:"longtitude"`
 }
-

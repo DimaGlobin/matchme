@@ -73,9 +73,11 @@ func NewApiRouter(log *slog.Logger, srv *service.Service) chi.Router {
 
 	//-----------------------Photos---------------------------
 	uploadFileHandler := files_handlers.NewUploadFileHandler(log, srv)
+	getFileHandler := files_handlers.NewGetFileHander(log, srv)
 
 	router.Route("/photos", func(r chi.Router) {
 		r.Post("/", uploadFileHandler.Handle())
+		r.Get("/{id}", getFileHandler.Handle())
 	})
 	//--------------------------------------------------------
 	return router

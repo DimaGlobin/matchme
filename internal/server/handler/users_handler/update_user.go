@@ -53,7 +53,7 @@ func (s *UpdateUserHandler) Handle() http.HandlerFunc {
 
 		fmt.Println(updates)
 
-		user_id := r.Context().Value(auth.UserCtx).(int)
+		user_id := r.Context().Value(auth.UserCtx).(uint64)
 		err = s.service.UsersService.UpdateUser(user_id, updates)
 		if err != nil {
 			msg := "Cannot update user"

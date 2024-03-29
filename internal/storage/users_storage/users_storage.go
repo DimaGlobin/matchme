@@ -16,8 +16,8 @@ func NewUsersPostgres(db *sqlx.DB) *UserPostgres {
 	return &UserPostgres{db: db}
 }
 
-func (u *UserPostgres) CreateUser(user *model.User) (int, error) {
-	var id int
+func (u *UserPostgres) CreateUser(user *model.User) (uint64, error) {
+	var id uint64
 	query := "INSERT INTO users (email, phone_number, name, password_hash, sex, age, birth_date, city, description, role, max_age) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING user_id"
 
 	row := u.db.QueryRow(query, user.Email, user.PhoneNumber, user.Name, user.Password, user.Sex, user.Age, user.BirthDate, user.City, user.Description, user.Role, user.MaxAge)
@@ -39,7 +39,7 @@ func (u *UserPostgres) GetUser(email string) (*model.User, error) {
 	return user, nil
 }
 
-func (u *UserPostgres) GetUserById(id int) (*model.User, error) {
+func (u *UserPostgres) GetUserById(id uint64) (*model.User, error) {
 	user := &model.User{}
 	query := "SELECT * FROM users where user_id=$1"
 	if err := u.db.Get(user, query, id); err != nil {
@@ -49,7 +49,7 @@ func (u *UserPostgres) GetUserById(id int) (*model.User, error) {
 	return user, nil
 }
 
-func (u *UserPostgres) UpdateUser(id int, updates model.Updates) error {
+func (u *UserPostgres) UpdateUser(id uint64, updates model.Updates) error {
 	query := "UPDATE users SET"
 
 	count := 1
@@ -80,7 +80,7 @@ func (u *UserPostgres) UpdateUser(id int, updates model.Updates) error {
 	return err
 }
 
-func (u *UserPostgres) DeleteUser(id int) error {
+func (u *UserPostgres) DeleteUser(id uint64) error {
 	query := "DELETE FROM users WHERE user_id=$1"
 	_, err := u.db.Exec(query, id)
 

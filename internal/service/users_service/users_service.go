@@ -21,7 +21,7 @@ type UsersService struct {
 
 type tokenClaims struct {
 	jwt.RegisteredClaims
-	UserId int `json:"user_id"`
+	UserId uint64 `json:"user_id"`
 }
 
 func NewUsersService(storage storage.UsersStorage) *UsersService {
@@ -30,7 +30,7 @@ func NewUsersService(storage storage.UsersStorage) *UsersService {
 	}
 }
 
-func (u *UsersService) CreateUser(user *model.User) (int, error) {
+func (u *UsersService) CreateUser(user *model.User) (uint64, error) {
 	hash, err := generatePasswordHash(user.Password)
 	if err != nil {
 		return 0, err
@@ -62,7 +62,7 @@ func (u *UsersService) GenerateToken(email string, password string) (string, err
 	return token.SignedString([]byte(os.Getenv("SECRET")))
 }
 
-func (u *UsersService) ParseToken(accessToken string) (int, error) {
+func (u *UsersService) ParseToken(accessToken string) (uint64, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
@@ -82,15 +82,15 @@ func (u *UsersService) ParseToken(accessToken string) (int, error) {
 	return claims.UserId, nil
 }
 
-func (u *UsersService) GetuserById(id int) (*model.User, error) {
+func (u *UsersService) GetuserById(id uint64) (*model.User, error) {
 	return u.usersStorage.GetUserById(id)
 }
 
-func (u *UsersService) UpdateUser(id int, updates model.Updates) error {
+func (u *UsersService) UpdateUser(id uint64, updates model.Updates) error {
 	return u.usersStorage.UpdateUser(id, updates)
 }
 
-func (u *UsersService) DeleteUser(id int) error {
+func (u *UsersService) DeleteUser(id uint64) error {
 	return u.usersStorage.DeleteUser(id)
 }
 

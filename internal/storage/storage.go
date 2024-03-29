@@ -12,19 +12,21 @@ import (
 )
 
 type UsersStorage interface {
-	CreateUser(user *model.User) (int, error)
+	CreateUser(user *model.User) (uint64, error)
 	GetUser(email string) (*model.User, error)
-	GetUserById(id int) (*model.User, error)
-	UpdateUser(id int, updates model.Updates) error
-	DeleteUser(id int) error
+	GetUserById(id uint64) (*model.User, error)
+	UpdateUser(id uint64, updates model.Updates) error
+	DeleteUser(id uint64) error
 }
 
 type FilesStorage interface {
 	UploadFile(ctx context.Context, fd *model.FileData, file io.Reader) error
+	GetFile(ctx context.Context, userId uint64, fd *model.FileData) ([]byte, error)
 }
 
 type FilesDataStorage interface {
-	AddFile(data *model.FileData) (int, error)
+	AddFile(data *model.FileData) (uint64, error)
+	GetFile(fileId, userId uint64) (*model.FileData, error)
 }
 
 var _ UsersStorage = (*users_storage.UserPostgres)(nil)
