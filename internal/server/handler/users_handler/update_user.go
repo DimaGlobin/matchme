@@ -1,41 +1,40 @@
 package users_handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/DimaGlobin/matchme/internal/lib/api"
 	"github.com/DimaGlobin/matchme/internal/lib/logger/sl"
+	"github.com/DimaGlobin/matchme/internal/middleware/auth"
+	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"golang.org/x/exp/slog"
 )
 
-type SigninHandler struct {
+type UpdateUserHandler struct {
 	logger  *slog.Logger
 	service *service.Service
 }
 
-func NewSignInHandler(log *slog.Logger, srv *service.Service) *SigninHandler {
-	return &SigninHandler{
+func NewUpdateUserHandler(log *slog.Logger, srv *service.Service) *UpdateUserHandler {
+	return &UpdateUserHandler{
 		logger:  log,
 		service: srv,
 	}
 }
 
-type SignInBody struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
-func (s *SigninHandler) Handle() http.HandlerFunc {
+func (s *UpdateUserHandler) Handle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		body := &SignInBody{}
 		log := s.logger.With(
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		err := render.DecodeJSON(r.Body, body)
+		var updates model.Updates
+
+		err := render.DecodeJSON(r.Body, &updates)
 		if err != nil {
 			msg := "Unable to decode request body"
 			log.Error(msg, sl.Err(err))
@@ -44,18 +43,28 @@ func (s *SigninHandler) Handle() http.HandlerFunc {
 			return
 		}
 
-		token, err := s.service.UsersService.GenerateToken(body.Email, body.Password)
+		if !updates.Valid() {
+			msg := "Invalid request body"
+			log.Error(msg)
+			api.Respond(w, r, http.StatusBadRequest, msg)
+
+			return
+		}
+
+		fmt.Println(updates)
+
+		user_id := r.Context().Value(auth.UserCtx).(int)
+		err = s.service.UsersService.UpdateUser(user_id, updates)
 		if err != nil {
-			msg := "Unable to create jwt token"
+			msg := "Cannot update user"
 			log.Error(msg, sl.Err(err))
 			api.Respond(w, r, http.StatusInternalServerError, msg)
 
 			return
 		}
 
-		api.Respond(w, r, http.StatusOK, map[string]interface{}{
-			"token": token,
-		})
-
+		msg := "User was successfully updated"
+		log.Info(msg)
+		api.Respond(w, r, http.StatusOK, msg)
 	}
 }

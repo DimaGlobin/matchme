@@ -43,9 +43,12 @@ func main() {
 		stdlog.Fatal("Cannot connect to db")
 	}
 
-	cmd := exec.Command("migrate", "-path", "./internal/schema/migrations", "-database", "postgres://postgres:qwerty@db:5432/postgres?sslmode=disable", "up")
+	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s", cfg.UsersDBConfig.User, cfg.UsersDBConfig.Password, cfg.UsersDBConfig.Host, cfg.UsersDBConfig.Port, cfg.UsersDBConfig.DBName, cfg.UsersDBConfig.SSLMode)
+
+	cmd := exec.Command("migrate", "-path", "./internal/schema/migrations", "-database", dbURL, "up")
 	err = cmd.Run()
 	if err != nil {
+		fmt.Println(cfg, err)
 		stdlog.Fatal("Cannot migrate DB")
 		return
 	}

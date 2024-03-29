@@ -1,6 +1,7 @@
 package files_handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/DimaGlobin/matchme/internal/lib/api"
@@ -8,6 +9,7 @@ import (
 	"github.com/DimaGlobin/matchme/internal/middleware/auth"
 	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/DimaGlobin/matchme/internal/service"
+	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/exp/slog"
 )
 
@@ -32,6 +34,10 @@ func (u *UploadFileHandler) Handle() http.HandlerFunc {
 		// 	}
 		// }
 
+		log := u.logger.With(
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+
 		reqFile, header, err := r.FormFile("file")
 		if err != nil {
 			msg := "Cannot get file from request"
@@ -47,7 +53,7 @@ func (u *UploadFileHandler) Handle() http.HandlerFunc {
 		fileData.Size = header.Size
 		fileData.UserId = r.Context().Value(auth.UserCtx).(int)
 
-		err = u.service.FilesService.UploadFile(r.Context(), fileData, reqFile)
+		id, err := u.service.FilesService.UploadFile(r.Context(), fileData, reqFile)
 		if err != nil {
 			msg := "Cannot upload file"
 			u.logger.Error(msg, sl.Err(err))
@@ -56,8 +62,9 @@ func (u *UploadFileHandler) Handle() http.HandlerFunc {
 			return
 		}
 
-		msg := "File was successfully uploaded"
-		u.logger.Info(msg)
-		api.Respond(w, r, http.StatusOK, msg)
+		log.Info(fmt.Sprintf("User was successfully created, id: %d", id))
+		api.Respond(w, r, http.StatusOK, map[string]interface{}{
+			"id": id,
+		})
 	}
 }

@@ -9,15 +9,21 @@ import (
 )
 
 type FilesService struct {
-	filesStorage storage.FilesStorage
+	filesStorage     storage.FilesStorage
+	filesDataStorage storage.FilesDataStorage
 }
 
-func NewFilesService(filesStorage storage.FilesStorage) *FilesService {
+func NewFilesService(filesStorage storage.FilesStorage, filesDataStorage storage.FilesDataStorage) *FilesService {
 	return &FilesService{
-		filesStorage: filesStorage,
+		filesStorage:     filesStorage,
+		filesDataStorage: filesDataStorage,
 	}
 }
 
-func (f *FilesService) UploadFile(ctx context.Context, fd *model.FileData, file io.Reader) error {
-	return f.filesStorage.UploadFile(ctx, fd, file)
+func (f *FilesService) UploadFile(ctx context.Context, fd *model.FileData, file io.Reader) (int, error) {
+	if err := f.filesStorage.UploadFile(ctx, fd, file); err != nil {
+		return 0, err
+	}
+
+	return f.filesDataStorage.AddFile(fd)
 }
