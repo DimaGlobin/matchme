@@ -48,3 +48,13 @@ func (f *FilesMinio) GetFile(ctx context.Context, userId uint64, fd *model.FileD
 
 	return buffer, nil
 }
+
+func (f *FilesMinio) DeleteFile(ctx context.Context, userId uint64, fd *model.FileData) error {
+	url := fmt.Sprintf("%d/%s", userId, fd.FileName)
+
+	return f.client.minioClient.RemoveObject(ctx, f.client.bucketName, url, minio.RemoveObjectOptions{})
+}
+
+// func (f *FilesMinio) GetAllFiles(ctx context.Context, userId uint64) ([][]byte, error) {
+
+// }

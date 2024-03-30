@@ -28,8 +28,8 @@ func (f *FilesService) UploadFile(ctx context.Context, fd *model.FileData, file 
 	return f.filesDataStorage.AddFile(fd)
 }
 
-func (f *FilesService) GetFile(ctx context.Context, fileId, userId uint64) (*model.File, error) {
-	fd, err := f.filesDataStorage.GetFile(fileId, userId)
+func (f *FilesService) GetFileById(ctx context.Context, fileId, userId uint64) (*model.File, error) {
+	fd, err := f.filesDataStorage.GetFileById(fileId, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -43,4 +43,56 @@ func (f *FilesService) GetFile(ctx context.Context, fileId, userId uint64) (*mod
 		Name:   fd.FileName,
 		Buffer: buf,
 	}, nil
+}
+
+func (f *FilesService) GetFileByName(ctx context.Context, userId uint64, filename string) (*model.File, error) {
+	fd, err := f.filesDataStorage.GetFileByName(userId, filename)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := f.filesStorage.GetFile(ctx, userId, fd)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.File{
+		Name:   fd.FileName,
+		Buffer: buf,
+	}, nil
+}
+
+func (f *FilesService) GetAllFiles(ctx context.Context, userId uint64) ([]*model.File, error) {
+	files := []*model.File{}
+	filesData, err := f.filesDataStorage.GetAllFiles(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range filesData {
+		buf, err := f.filesStorage.GetFile(ctx, userId, v)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, &model.File{
+			Name:   v.FileName,
+			Buffer: buf,
+		})
+	}
+
+	return files, nil
+}
+
+func (f *FilesService) DeleteFile(ctx context.Context, fileId, userId uint64) error {
+	fd, err := f.filesDataStorage.GetFileById(fileId, userId)
+	if err != nil {
+		return err
+	}
+
+	err = f.filesStorage.DeleteFile(ctx, userId, fd)
+	if err != nil {
+		return err
+	}
+
+	return f.filesDataStorage.DeleteFile(fileId, userId)
 }

@@ -21,11 +21,14 @@ type UsersService interface {
 
 type FilesService interface {
 	UploadFile(ctx context.Context, fd *model.FileData, file io.Reader) (uint64, error)
-	GetFile(ctx context.Context, fileId, userId uint64) (*model.File, error)
+	GetFileById(ctx context.Context, fileId, userId uint64) (*model.File, error)
+	GetFileByName(ctx context.Context, userId uint64, filename string) (*model.File, error)
+	DeleteFile(ctx context.Context, fileId, userId uint64) error
+	GetAllFiles(ctx context.Context, userId uint64) ([]*model.File, error)
 }
 
 var _ UsersService = (*users_service.UsersService)(nil)
-var _FilesService = (*files_service.FilesService)(nil)
+var _ FilesService = (*files_service.FilesService)(nil)
 
 type Service struct {
 	UsersService

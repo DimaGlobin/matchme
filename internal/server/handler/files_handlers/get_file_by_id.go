@@ -14,28 +14,29 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-type GetFileHandler struct {
+type GetFileByIdHandler struct {
 	logger  *slog.Logger
 	service *service.Service
 }
 
-func NewGetFileHander(log *slog.Logger, srv *service.Service) *GetFileHandler {
-	return &GetFileHandler{
+func NewGetFileByIdHander(log *slog.Logger, srv *service.Service) *GetFileByIdHandler {
+	return &GetFileByIdHandler{
 		logger:  log,
 		service: srv,
 	}
 }
 
-func (g *GetFileHandler) Handle() http.HandlerFunc {
+func (g *GetFileByIdHandler) Handle() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log := g.logger.With(
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
 		fileIdStr := chi.URLParam(r, "id")
+		fmt.Println("idStr: ", fileIdStr)
 		fileId, err := strconv.ParseUint(fileIdStr, 10, 64)
 		if err != nil {
-			msg := "Unable to parse id from url query"
+			msg := "Unable to get id from url query"
 			log.Error(msg, sl.Err(err))
 			api.Respond(w, r, http.StatusBadRequest, msg)
 
@@ -44,7 +45,7 @@ func (g *GetFileHandler) Handle() http.HandlerFunc {
 
 		userId := r.Context().Value(auth.UserCtx).(uint64)
 
-		file, err := g.service.GetFile(r.Context(), fileId, userId)
+		file, err := g.service.GetFileById(r.Context(), fileId, userId)
 		if err != nil {
 			msg := "Unable to get file"
 			log.Error(msg, sl.Err(err))

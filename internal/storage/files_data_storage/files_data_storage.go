@@ -26,7 +26,7 @@ func (f *FilesPostgres) AddFile(data *model.FileData) (uint64, error) {
 	return id, nil
 }
 
-func (f *FilesPostgres) GetFile(fileId, userId uint64) (*model.FileData, error) {
+func (f *FilesPostgres) GetFileById(fileId, userId uint64) (*model.FileData, error) {
 	fd := &model.FileData{}
 
 	query := "SELECT * FROM files WHERE file_id=$1 AND user_id=$2"
@@ -36,4 +36,48 @@ func (f *FilesPostgres) GetFile(fileId, userId uint64) (*model.FileData, error) 
 	}
 
 	return fd, nil
+}
+
+func (f *FilesPostgres) GetFileByName(userId uint64, filename string) (*model.FileData, error) {
+	fd := &model.FileData{}
+
+	query := "SELECT * FROM files WHERE file_name=$1 AND user_id=$2"
+
+	if err := f.db.Get(fd, query, filename, userId); err != nil {
+		return nil, err
+	}
+
+	return fd, nil
+}
+
+func (f *FilesPostgres) GetAllFiles(userId uint64) ([]*model.FileData, error) {
+	files := []*model.FileData{}
+
+	query := "SELECT * FROM files WHERE user_id=$1"
+	rows, err := f.db.Query(query, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		fd := &model.FileData{}
+		if err := rows.Scan(&fd.Id, &fd.UserId, &fd.FileName, &fd.Size, &fd.UploadDate); err != nil {
+			return nil, err
+		}
+
+		files = append(files, fd)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+func (f *FilesPostgres) DeleteFile(fileId, userId uint64) error {
+	query := "DELETE FROM files WHERE user_id=$1 AND file_id=$2"
+	_, err := f.db.Exec(query, userId, fileId)
+
+	return err
 }

@@ -63,7 +63,7 @@ func NewApiRouter(log *slog.Logger, srv *service.Service) chi.Router {
 	deleteUserhandler := users_handler.NewDeleteUserHandler(log, srv)
 
 	router.Route("/users", func(r chi.Router) {
-		r.Get("/{id}", getUserHandler.Handle())
+		r.Get("/{id}", getUserHandler.Handle()) // TODO: Добавить доп условия на получение пользователей(чтобы любой не мог получить профиль любого)
 		r.Get("/", getUserHandler.Handle())
 		r.Put("/", updateUserHandler.Handle())
 		r.Delete("/", deleteUserhandler.Handle())
@@ -73,12 +73,19 @@ func NewApiRouter(log *slog.Logger, srv *service.Service) chi.Router {
 
 	//-----------------------Photos---------------------------
 	uploadFileHandler := files_handlers.NewUploadFileHandler(log, srv)
-	getFileHandler := files_handlers.NewGetFileHander(log, srv)
+	getFileByIdHandler := files_handlers.NewGetFileByIdHander(log, srv)
+	getFileByNameHandler := files_handlers.NewGetFileByNameHandler(log, srv)
+	getFilesHandler := files_handlers.NewGetFilesHandler(log, srv)
+	deleteFileHandler := files_handlers.NewDeleteFileHandler(log, srv)
 
 	router.Route("/photos", func(r chi.Router) {
 		r.Post("/", uploadFileHandler.Handle())
-		r.Get("/{id}", getFileHandler.Handle())
+		r.Get("/id/{id}", getFileByIdHandler.Handle())
+		r.Get("/", getFilesHandler.Handle())
+		r.Get("/filename/{filename}", getFileByNameHandler.Handle())
+		r.Delete("/{id}", deleteFileHandler.Handle())
 	})
+
 	//--------------------------------------------------------
 	return router
 }

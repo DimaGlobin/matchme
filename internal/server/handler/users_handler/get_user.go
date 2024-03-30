@@ -1,6 +1,7 @@
 package users_handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -32,6 +33,8 @@ func (s *GetUserHandler) Handle() http.HandlerFunc {
 		)
 
 		idStr := chi.URLParam(r, "id")
+
+		fmt.Println("idStr: ", idStr)
 
 		var id uint64
 		var err error

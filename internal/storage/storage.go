@@ -22,11 +22,15 @@ type UsersStorage interface {
 type FilesStorage interface {
 	UploadFile(ctx context.Context, fd *model.FileData, file io.Reader) error
 	GetFile(ctx context.Context, userId uint64, fd *model.FileData) ([]byte, error)
+	DeleteFile(ctx context.Context, userId uint64, fd *model.FileData) error
 }
 
 type FilesDataStorage interface {
 	AddFile(data *model.FileData) (uint64, error)
-	GetFile(fileId, userId uint64) (*model.FileData, error)
+	GetFileById(fileId, userId uint64) (*model.FileData, error)
+	GetFileByName(userId uint64, filename string) (*model.FileData, error)
+	GetAllFiles(userId uint64) ([]*model.FileData, error)
+	DeleteFile(fileId, userId uint64) error
 }
 
 var _ UsersStorage = (*users_storage.UserPostgres)(nil)
