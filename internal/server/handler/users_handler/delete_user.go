@@ -29,7 +29,7 @@ func (s *DeleteUserHandler) Handle() http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		user_id := r.Context().Value(auth.UserCtx).(int)
+		user_id := r.Context().Value(auth.UserCtx).(uint64)
 		err := s.service.UsersService.DeleteUser(user_id)
 		if err != nil {
 			msg := "Cannot delete user"

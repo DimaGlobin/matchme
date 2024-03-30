@@ -1,6 +1,7 @@
 package users_handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -33,11 +34,13 @@ func (s *GetUserHandler) Handle() http.HandlerFunc {
 
 		idStr := chi.URLParam(r, "id")
 
-		var id int
+		fmt.Println("idStr: ", idStr)
+
+		var id uint64
+		var err error
 
 		if idStr != "" {
-			id64, err := strconv.ParseInt(idStr, 10, 0)
-			id = int(id64)
+			id, err = strconv.ParseUint(idStr, 10, 64)
 			if err != nil {
 				msg := "Unable to parse id from url query"
 				log.Error(msg, sl.Err(err))
@@ -46,7 +49,7 @@ func (s *GetUserHandler) Handle() http.HandlerFunc {
 				return
 			}
 		} else {
-			id = r.Context().Value(auth.UserCtx).(int)
+			id = r.Context().Value(auth.UserCtx).(uint64)
 		}
 
 		user, err := s.service.UsersService.GetuserById(id)

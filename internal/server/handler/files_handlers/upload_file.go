@@ -51,7 +51,7 @@ func (u *UploadFileHandler) Handle() http.HandlerFunc {
 		fileData := new(model.FileData)
 		fileData.FileName = header.Filename
 		fileData.Size = header.Size
-		fileData.UserId = r.Context().Value(auth.UserCtx).(int)
+		fileData.UserId = r.Context().Value(auth.UserCtx).(uint64)
 
 		id, err := u.service.FilesService.UploadFile(r.Context(), fileData, reqFile)
 		if err != nil {

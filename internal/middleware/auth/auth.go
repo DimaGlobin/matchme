@@ -49,7 +49,7 @@ func New(log *slog.Logger, srv *service.Service) func(next http.Handler) http.Ha
 			userId, err := srv.UsersService.ParseToken(headerParts[1])
 			if err != nil {
 				msg := "Cannot parse token"
-				api.Respond(w, r, http.StatusInternalServerError, msg)
+				api.Respond(w, r, http.StatusUnauthorized, msg)
 				log.Error(msg)
 				return
 			}

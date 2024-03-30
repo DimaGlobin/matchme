@@ -45,7 +45,7 @@ CREATE TABLE matches (
 CREATE TABLE files (
     file_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users (user_id),
-    filename VARCHAR(255) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
     size BIGINT NOT NULL,
     upload_date TIMESTAMP default CURRENT_TIMESTAMP
 );
