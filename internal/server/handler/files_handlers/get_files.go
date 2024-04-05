@@ -24,8 +24,7 @@ func NewGetFilesHandler(log *slog.Logger, srv *service.Service) *GetFilesHandler
 	}
 }
 
-func (g *GetFilesHandler) Handle() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (g *GetFilesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log := g.logger.With(
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
@@ -68,4 +67,3 @@ func (g *GetFilesHandler) Handle() http.HandlerFunc {
 		log.Info(msg)
 		api.Respond(w, r, http.StatusOK, "")
 	}
-}

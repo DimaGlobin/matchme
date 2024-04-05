@@ -28,34 +28,32 @@ type SignInBody struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func (s *SigninHandler) Handle() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		body := &SignInBody{}
-		log := s.logger.With(
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+func (s *SigninHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	body := &SignInBody{}
+	log := s.logger.With(
+		slog.String("request_id", middleware.GetReqID(r.Context())),
+	)
 
-		err := render.DecodeJSON(r.Body, body)
-		if err != nil {
-			msg := "Unable to decode request body"
-			log.Error(msg, sl.Err(err))
-			api.Respond(w, r, http.StatusBadRequest, msg)
+	err := render.DecodeJSON(r.Body, body)
+	if err != nil {
+		msg := "Unable to decode request body"
+		log.Error(msg, sl.Err(err))
+		api.Respond(w, r, http.StatusBadRequest, msg)
 
-			return
-		}
-
-		token, err := s.service.UsersService.GenerateToken(body.Email, body.Password)
-		if err != nil {
-			msg := "Unable to create jwt token"
-			log.Error(msg, sl.Err(err))
-			api.Respond(w, r, http.StatusInternalServerError, msg)
-
-			return
-		}
-
-		api.Respond(w, r, http.StatusOK, map[string]interface{}{
-			"token": token,
-		})
-
+		return
 	}
+
+	token, err := s.service.UsersService.GenerateToken(body.Email, body.Password)
+	if err != nil {
+		msg := "Unable to create jwt token"
+		log.Error(msg, sl.Err(err))
+		api.Respond(w, r, http.StatusInternalServerError, msg)
+
+		return
+	}
+
+	api.Respond(w, r, http.StatusOK, map[string]interface{}{
+		"token": token,
+	})
+
 }

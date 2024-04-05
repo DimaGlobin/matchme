@@ -25,46 +25,44 @@ func NewUploadFileHandler(log *slog.Logger, srv *service.Service) *UploadFileHan
 	}
 }
 
-func (u *UploadFileHandler) Handle() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (u *UploadFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-		// for name, values := range r.Header {
-		// 	for _, value := range values {
-		// 		fmt.Println(name, value)
-		// 	}
-		// }
+	// for name, values := range r.Header {
+	// 	for _, value := range values {
+	// 		fmt.Println(name, value)
+	// 	}
+	// }
 
-		log := u.logger.With(
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+	log := u.logger.With(
+		slog.String("request_id", middleware.GetReqID(r.Context())),
+	)
 
-		reqFile, header, err := r.FormFile("file")
-		if err != nil {
-			msg := "Cannot get file from request"
-			u.logger.Error(msg, sl.Err(err))
-			api.Respond(w, r, http.StatusBadRequest, "")
+	reqFile, header, err := r.FormFile("file")
+	if err != nil {
+		msg := "Cannot get file from request"
+		u.logger.Error(msg, sl.Err(err))
+		api.Respond(w, r, http.StatusBadRequest, "")
 
-			return
-		}
-		defer reqFile.Close()
-
-		fileData := new(model.FileData)
-		fileData.FileName = header.Filename
-		fileData.Size = header.Size
-		fileData.UserId = r.Context().Value(auth.UserCtx).(uint64)
-
-		id, err := u.service.FilesService.UploadFile(r.Context(), fileData, reqFile)
-		if err != nil {
-			msg := "Cannot upload file"
-			u.logger.Error(msg, sl.Err(err))
-			api.Respond(w, r, http.StatusInternalServerError, "")
-
-			return
-		}
-
-		log.Info(fmt.Sprintf("User was successfully created, id: %d", id))
-		api.Respond(w, r, http.StatusOK, map[string]interface{}{
-			"id": id,
-		})
+		return
 	}
+	defer reqFile.Close()
+
+	fileData := new(model.FileData)
+	fileData.FileName = header.Filename
+	fileData.Size = header.Size
+	fileData.UserId = r.Context().Value(auth.UserCtx).(uint64)
+
+	id, err := u.service.FilesService.UploadFile(r.Context(), fileData, reqFile)
+	if err != nil {
+		msg := "Cannot upload file"
+		u.logger.Error(msg, sl.Err(err))
+		api.Respond(w, r, http.StatusInternalServerError, "")
+
+		return
+	}
+
+	log.Info(fmt.Sprintf("User was successfully created, id: %d", id))
+	api.Respond(w, r, http.StatusOK, map[string]interface{}{
+		"id": id,
+	})
 }

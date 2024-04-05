@@ -26,45 +26,43 @@ func NewUpdateUserHandler(log *slog.Logger, srv *service.Service) *UpdateUserHan
 	}
 }
 
-func (s *UpdateUserHandler) Handle() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		log := s.logger.With(
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+func (s *UpdateUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log := s.logger.With(
+		slog.String("request_id", middleware.GetReqID(r.Context())),
+	)
 
-		var updates model.Updates
+	var updates model.Updates
 
-		err := render.DecodeJSON(r.Body, &updates)
-		if err != nil {
-			msg := "Unable to decode request body"
-			log.Error(msg, sl.Err(err))
-			api.Respond(w, r, http.StatusBadRequest, msg)
+	err := render.DecodeJSON(r.Body, &updates)
+	if err != nil {
+		msg := "Unable to decode request body"
+		log.Error(msg, sl.Err(err))
+		api.Respond(w, r, http.StatusBadRequest, msg)
 
-			return
-		}
-
-		if !updates.Valid() {
-			msg := "Invalid request body"
-			log.Error(msg)
-			api.Respond(w, r, http.StatusBadRequest, msg)
-
-			return
-		}
-
-		fmt.Println(updates)
-
-		user_id := r.Context().Value(auth.UserCtx).(uint64)
-		err = s.service.UsersService.UpdateUser(user_id, updates)
-		if err != nil {
-			msg := "Cannot update user"
-			log.Error(msg, sl.Err(err))
-			api.Respond(w, r, http.StatusInternalServerError, msg)
-
-			return
-		}
-
-		msg := "User was successfully updated"
-		log.Info(msg)
-		api.Respond(w, r, http.StatusOK, msg)
+		return
 	}
+
+	if !updates.Valid() {
+		msg := "Invalid request body"
+		log.Error(msg)
+		api.Respond(w, r, http.StatusBadRequest, msg)
+
+		return
+	}
+
+	fmt.Println(updates)
+
+	user_id := r.Context().Value(auth.UserCtx).(uint64)
+	err = s.service.UsersService.UpdateUser(user_id, updates)
+	if err != nil {
+		msg := "Cannot update user"
+		log.Error(msg, sl.Err(err))
+		api.Respond(w, r, http.StatusInternalServerError, msg)
+
+		return
+	}
+
+	msg := "User was successfully updated"
+	log.Info(msg)
+	api.Respond(w, r, http.StatusOK, msg)
 }

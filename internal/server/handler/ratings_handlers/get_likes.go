@@ -1,4 +1,4 @@
-package users_handler
+package ratings_handlers
 
 import (
 	"net/http"
@@ -11,34 +11,36 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-type DeleteUserHandler struct {
+type GetLikesHandler struct {
 	logger  *slog.Logger
 	service *service.Service
 }
 
-func NewDeleteUserHandler(log *slog.Logger, srv *service.Service) *DeleteUserHandler {
-	return &DeleteUserHandler{
+func NewGetLikesHandler(log *slog.Logger, srv *service.Service) *GetLikesHandler {
+	return &GetLikesHandler{
 		logger:  log,
 		service: srv,
 	}
 }
 
-func (s *DeleteUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log := s.logger.With(
+func (g *GetLikesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log := g.logger.With(
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
-	user_id := r.Context().Value(auth.UserCtx).(uint64)
-	err := s.service.UsersService.DeleteUser(user_id)
+	userId := r.Context().Value(auth.UserCtx).(uint64)
+
+	likes, err := g.service.RatingsService.GetAllLikes(userId)
 	if err != nil {
-		msg := "Cannot delete user"
+		msg := "Unable to get likes"
 		log.Error(msg, sl.Err(err))
 		api.Respond(w, r, http.StatusInternalServerError, msg)
 
 		return
 	}
 
-	msg := "User was successfully deleted"
-	log.Info(msg)
-	api.Respond(w, r, http.StatusOK, msg)
+	log.Info("User was successfully sent")
+	api.Respond(w, r, http.StatusOK, map[string]interface{}{
+		"likeUserIds": likes,
+	})
 }

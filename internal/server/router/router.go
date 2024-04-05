@@ -6,6 +6,7 @@ import (
 	"github.com/DimaGlobin/matchme/internal/middleware/auth"
 	"github.com/DimaGlobin/matchme/internal/middleware/logger"
 	"github.com/DimaGlobin/matchme/internal/server/handler/files_handlers"
+	"github.com/DimaGlobin/matchme/internal/server/handler/ratings_handlers"
 	"github.com/DimaGlobin/matchme/internal/server/handler/users_handler"
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -32,8 +33,8 @@ func NewRouter(log *slog.Logger, srv *service.Service) chi.Router {
 	signInHandler := users_handler.NewSignInHandler(log, srv)
 	signUpHandler := users_handler.NewSignUpHandler(log, srv)
 
-	router.Post("/sign_up", signUpHandler.Handle())
-	router.Post("/sign_in", signInHandler.Handle())
+	router.Post("/sign_up", signUpHandler.ServeHTTP)
+	router.Post("/sign_in", signInHandler.ServeHTTP)
 
 	//---------------------------------------------------------
 
@@ -63,10 +64,10 @@ func NewApiRouter(log *slog.Logger, srv *service.Service) chi.Router {
 	deleteUserhandler := users_handler.NewDeleteUserHandler(log, srv)
 
 	router.Route("/users", func(r chi.Router) {
-		r.Get("/{id}", getUserHandler.Handle()) // TODO: Добавить доп условия на получение пользователей(чтобы любой не мог получить профиль любого)
-		r.Get("/", getUserHandler.Handle())
-		r.Put("/", updateUserHandler.Handle())
-		r.Delete("/", deleteUserhandler.Handle())
+		r.Get("/{id}", getUserHandler.ServeHTTP) // TODO: Добавить доп условия на получение пользователей(чтобы любой не мог получить профиль любого)
+		r.Get("/", getUserHandler.ServeHTTP)
+		r.Put("/", updateUserHandler.ServeHTTP)
+		r.Delete("/", deleteUserhandler.ServeHTTP)
 	})
 
 	//--------------------------------------------------------
@@ -79,11 +80,25 @@ func NewApiRouter(log *slog.Logger, srv *service.Service) chi.Router {
 	deleteFileHandler := files_handlers.NewDeleteFileHandler(log, srv)
 
 	router.Route("/photos", func(r chi.Router) {
-		r.Post("/", uploadFileHandler.Handle())
-		r.Get("/id/{id}", getFileByIdHandler.Handle())
-		r.Get("/", getFilesHandler.Handle())
-		r.Get("/filename/{filename}", getFileByNameHandler.Handle())
-		r.Delete("/{id}", deleteFileHandler.Handle())
+		r.Post("/", uploadFileHandler.ServeHTTP)
+		r.Get("/id/{id}", getFileByIdHandler.ServeHTTP)
+		r.Get("/", getFilesHandler.ServeHTTP)
+		r.Get("/filename/{filename}", getFileByNameHandler.ServeHTTP)
+		r.Delete("/{id}", deleteFileHandler.ServeHTTP)
+	})
+
+	//--------------------------------------------------------
+
+	//-----------------------Ratings---------------------------
+
+	reactionHandler := ratings_handlers.NewReactionHandler(log, srv)
+	rateHadler := ratings_handlers.NewRateUserHandler(log, srv)
+
+	router.Route("/action", func(r chi.Router) {
+		r.Get("/rate", rateHadler.ServeHTTP)
+		r.Post("/like/{id}", reactionHandler.ServeHTTP)
+		// r.Get("/likes")
+		r.Post("/dislike/{id}", reactionHandler.ServeHTTP)
 	})
 
 	//--------------------------------------------------------

@@ -26,6 +26,18 @@ func (f *FilesPostgres) AddFile(data *model.FileData) (uint64, error) {
 	return id, nil
 }
 
+func (f *FilesPostgres) GetFilesCount(userId uint64) (int, error) {
+	var count int
+
+	query := "SELECT COUNT(*) FROM files WHERE user_id=$1"
+
+	if err := f.db.Get(&count, query, userId); err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (f *FilesPostgres) GetFileById(fileId, userId uint64) (*model.FileData, error) {
 	fd := &model.FileData{}
 
