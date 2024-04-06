@@ -47,7 +47,7 @@ func (rh *ReactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	subjectId := r.Context().Value(auth.UserCtx).(uint64)
 
-	reactionId, err := rh.service.RatingsService.AddReaction(reaction, subjectId, objectId)
+	matchId, reactionId, err := rh.service.RatingsService.AddReaction(reaction, subjectId, objectId)
 	if err != nil {
 		msg := "Unable to add reaction id from url query"
 		log.Error(msg, sl.Err(err))
@@ -57,7 +57,8 @@ func (rh *ReactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info(fmt.Sprintf("Reacted %s successfully, reactionId: %d", reaction, reactionId))
-	api.Respond(w, r, http.StatusOK, map[string]interface{}{
-		reaction + "Id": reactionId,
+	api.Respond(w, r, http.StatusOK, map[string]interface{}{ //TODO: Bad response body, refactore in future
+		reaction + "_id": reactionId,
+		"match_id":       matchId,
 	})
 }

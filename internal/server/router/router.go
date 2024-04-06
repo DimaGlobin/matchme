@@ -93,11 +93,12 @@ func NewApiRouter(log *slog.Logger, srv *service.Service) chi.Router {
 
 	reactionHandler := ratings_handlers.NewReactionHandler(log, srv)
 	rateHadler := ratings_handlers.NewRateUserHandler(log, srv)
+	getLikesHandler := ratings_handlers.NewGetLikesHandler(log, srv)
 
 	router.Route("/action", func(r chi.Router) {
 		r.Get("/rate", rateHadler.ServeHTTP)
 		r.Post("/like/{id}", reactionHandler.ServeHTTP)
-		// r.Get("/likes")
+		r.Get("/likes", getLikesHandler.ServeHTTP)
 		r.Post("/dislike/{id}", reactionHandler.ServeHTTP)
 	})
 

@@ -30,7 +30,7 @@ type FilesService interface {
 
 type RatingsService interface {
 	RecommendUser(userId uint64) (*model.User, error)
-	AddReaction(reaction string, subjectId, objectId uint64) (uint64, error)
+	AddReaction(reaction string, subjectId, objectId uint64) (uint64, uint64, error)
 	GetAllLikes(userId uint64) ([]uint64, error)
 }
 

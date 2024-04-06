@@ -33,24 +33,39 @@ func (r *RatingsService) RecommendUser(userId uint64) (*model.User, error) {
 	return user, nil
 }
 
-func (r *RatingsService) AddReaction(reaction string, subjectId, objectId uint64) (uint64, error) {
+func (r *RatingsService) AddReaction(reaction string, subjectId, objectId uint64) (uint64, uint64, error) {
 	if reaction == like {
 		id, err := r.ratingsStorage.AddLike(subjectId, objectId)
 		if err != nil {
-			return 0, err
+			return 0, 0, err
 		}
 
-		return id, nil
+		exist, err := r.ratingsStorage.CheckLikeExistance(subjectId, objectId)
+		if err != nil {
+			return 0, 0, err
+		}
+
+		if !exist {
+			return id, 0, nil
+		}
+
+		matchId, err := r.ratingsStorage.AddMatch(subjectId, objectId)
+		if err != nil {
+			return 0, 0, err
+		}
+
+		return id, matchId, nil
+
 	} else if reaction == dislike {
 		id, err := r.ratingsStorage.AddDislike(subjectId, objectId)
 		if err != nil {
-			return 0, err
+			return 0, 0, err
 		}
 
-		return id, nil
+		return id, 0, nil
 	}
 
-	return 0, fmt.Errorf("Unsupported reaction")
+	return 0, 0, fmt.Errorf("Unsupported reaction")
 }
 
 func (r *RatingsService) GetAllLikes(userId uint64) ([]uint64, error) {

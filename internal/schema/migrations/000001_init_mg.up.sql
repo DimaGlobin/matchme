@@ -28,6 +28,8 @@ CREATE TABLE likes (
     creation_date TIMESTAMP default CURRENT_TIMESTAMP
 );
 
+CREATE UNIQUE INDEX idx_unique_like ON likes(liking_id, liked_id);
+
 CREATE TABLE dislikes (
     dislike_id SERIAL PRIMARY KEY,
     disliking_id INTEGER REFERENCES users (user_id),
@@ -35,12 +37,17 @@ CREATE TABLE dislikes (
     creation_date TIMESTAMP default CURRENT_TIMESTAMP
 );
 
+CREATE UNIQUE INDEX idx_unique_dislike ON dislikes(disliking_id, disliked_id);
+
 CREATE TABLE matches (
     match_id SERIAL PRIMARY KEY,
     user1 INTEGER REFERENCES users (user_id),
     user2 INTEGER REFERENCES users (user_id),
     creation_date TIMESTAMP default CURRENT_TIMESTAMP
 );
+
+CREATE UNIQUE INDEX idx_unique_match1 ON matches(user1, user2);
+CREATE UNIQUE INDEX idx_unique_match2 ON matches(user2, user1);
 
 CREATE TABLE files (
     file_id SERIAL PRIMARY KEY,

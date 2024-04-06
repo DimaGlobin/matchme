@@ -39,7 +39,7 @@ func (g *GetLikesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info("User was successfully sent")
+	log.Info("Likes was successfully sent")
 	api.Respond(w, r, http.StatusOK, map[string]interface{}{
 		"likeUserIds": likes,
 	})
