@@ -2,10 +2,15 @@ package files_service
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/DimaGlobin/matchme/internal/storage"
+)
+
+const (
+	filesLimit = 6
 )
 
 type FilesService struct {
@@ -21,6 +26,15 @@ func NewFilesService(filesStorage storage.FilesStorage, filesDataStorage storage
 }
 
 func (f *FilesService) UploadFile(ctx context.Context, fd *model.FileData, file io.Reader) (uint64, error) {
+
+	count, err := f.filesDataStorage.GetFilesCount(fd.UserId)
+	if err != nil {
+		return 0, err
+	}
+	if count >= filesLimit {
+		return 0, fmt.Errorf("Files limit exceeded")
+	}
+
 	if err := f.filesStorage.UploadFile(ctx, fd, file); err != nil {
 		return 0, err
 	}

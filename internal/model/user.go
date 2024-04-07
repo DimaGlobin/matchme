@@ -25,3 +25,10 @@ type User struct {
 	// Latitude    float64   `db:"latitude"`
 	// Longitude   float64   `db:"longtitude"`
 }
+
+type UserResponse struct {
+	Id          uint64 `json:"id" db:"user_id"`
+	Name        string `json:"name" binding:"required" db:"name"`
+	Age         int    `json:"age" binding:"required" db:"age"`
+	Description string `json:"description" db:"description"`
+}

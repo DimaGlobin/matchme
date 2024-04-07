@@ -25,36 +25,34 @@ func NewSignUpHandler(log *slog.Logger, srv *service.Service) *SignUpHandler {
 	}
 }
 
-func (s *SignUpHandler) Handle() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		user := &model.User{}
+func (s *SignUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	user := &model.User{}
 
-		log := s.logger.With(
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
+	log := s.logger.With(
+		slog.String("request_id", middleware.GetReqID(r.Context())),
+	)
 
-		err := render.DecodeJSON(r.Body, user)
-		if err != nil {
-			msg := "Unable to decode request body"
-			log.Error(msg, sl.Err(err))
-			api.Respond(w, r, http.StatusBadRequest, msg)
+	err := render.DecodeJSON(r.Body, user)
+	if err != nil {
+		msg := "Unable to decode request body"
+		log.Error(msg, sl.Err(err))
+		api.Respond(w, r, http.StatusBadRequest, msg)
 
-			return
-		}
-
-		id, err := s.service.UsersService.CreateUser(user)
-		if err != nil {
-			msg := "Unable to create user"
-			log.Error(msg, sl.Err(err))
-			api.Respond(w, r, http.StatusInternalServerError, "")
-
-			return
-		}
-
-		log.Info(fmt.Sprintf("User was successfully created, id: %d", id))
-		api.Respond(w, r, http.StatusOK, map[string]interface{}{
-			"id": id,
-		})
-
+		return
 	}
+
+	id, err := s.service.UsersService.CreateUser(user)
+	if err != nil {
+		msg := "Unable to create user"
+		log.Error(msg, sl.Err(err))
+		api.Respond(w, r, http.StatusInternalServerError, "")
+
+		return
+	}
+
+	log.Info(fmt.Sprintf("User was successfully created, id: %d", id))
+	api.Respond(w, r, http.StatusOK, map[string]interface{}{
+		"id": id,
+	})
+
 }

@@ -28,6 +28,16 @@ func (u *UserPostgres) CreateUser(user *model.User) (uint64, error) {
 	return id, nil
 }
 
+func (u *UserPostgres) GetRandomUser(userId uint64) (*model.User, error) {
+	user := &model.User{}
+	query := "SELECT * FROM users WHERE user_id!=$1 ORDER BY RANDOM() LIMIT 1" // It's the worst recommendational system I've ever seen :)
+	if err := u.db.Get(user, query, userId); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func (u *UserPostgres) GetUser(email string) (*model.User, error) {
 	user := &model.User{}
 	// fmt.Printf("email: %s, password: %s", email)
