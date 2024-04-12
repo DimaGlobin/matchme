@@ -19,6 +19,7 @@ import (
 	"github.com/DimaGlobin/matchme/internal/server/router"
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/DimaGlobin/matchme/internal/storage"
+	"github.com/DimaGlobin/matchme/internal/storage/cache_storage"
 	"github.com/DimaGlobin/matchme/internal/storage/files_storage"
 	"github.com/joho/godotenv"
 )
@@ -60,7 +61,14 @@ func main() {
 		return
 	}
 
-	storage := storage.NewStorage(db, minioClient)
+	rdb, err := cache_storage.NewRedisDB(cfg)
+	if err != nil {
+		fmt.Println(cfg, err)
+		stdlog.Fatal("Cannot connect to cache storage")
+		return
+	}
+
+	storage := storage.NewStorage(db, minioClient, rdb)
 	service := service.NewService(*storage)
 
 	log.Info(

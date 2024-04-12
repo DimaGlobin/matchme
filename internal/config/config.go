@@ -13,6 +13,7 @@ type Config struct {
 	HTTPServer         `yaml:"http_server"`
 	UsersDBConfig      `yaml:"users_db"`
 	FilesStorageConfig `yaml:"files_storage"`
+	CacheStorage       `yaml:"cache_storage"`
 }
 
 type HTTPServer struct {
@@ -35,6 +36,11 @@ type FilesStorageConfig struct {
 	AccessKey  string `yaml:"access_key"`
 	ScretKey   string `yaml:"secret_key"`
 	Bucketname string `yaml:"bucket_name"`
+}
+
+type CacheStorage struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
 func MustLoad(configPath string) *Config {

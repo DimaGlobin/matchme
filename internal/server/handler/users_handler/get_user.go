@@ -52,7 +52,7 @@ func (s *GetUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		id = r.Context().Value(auth.UserCtx).(uint64)
 	}
 
-	user, err := s.service.UsersService.GetuserById(id)
+	user, err := s.service.UsersService.GetuserById(r.Context(), id)
 	if err != nil {
 		msg := "Unable to get user"
 		log.Error(msg, sl.Err(err))

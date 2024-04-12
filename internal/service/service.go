@@ -15,7 +15,7 @@ type UsersService interface {
 	CreateUser(user *model.User) (uint64, error)
 	GenerateToken(login, password string) (string, error)
 	ParseToken(token string) (uint64, error)
-	GetuserById(id uint64) (*model.User, error)
+	GetuserById(ctx context.Context, id uint64) (*model.User, error)
 	UpdateUser(id uint64, updates model.Updates) error
 	DeleteUser(id uint64) error
 }
@@ -46,7 +46,7 @@ type Service struct {
 
 func NewService(storage storage.Storage) *Service {
 	return &Service{
-		UsersService:   users_service.NewUsersService(storage.UsersStorage),
+		UsersService:   users_service.NewUsersService(storage.UsersStorage, storage.CacheStorage),
 		FilesService:   files_service.NewFilesService(storage.FilesStorage, storage.FilesDataStorage),
 		RatingsService: ratings_service.NewRatingsService(storage.RatingsStorage, storage.UsersStorage),
 	}

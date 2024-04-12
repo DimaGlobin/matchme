@@ -1,6 +1,8 @@
 package ratings_storage
 
 import (
+	"fmt"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -12,10 +14,19 @@ func NewRatingsPostgres(db *sqlx.DB) *RatingsPostgres {
 	return &RatingsPostgres{db: db}
 }
 
-func (r *RatingsPostgres) AddLike(liking, liked uint64) (uint64, error) {
+func (r *RatingsPostgres) AddLike(likingId, likedId uint64) (uint64, error) {
 	var id uint64
-	query := "INSERT INTO likes (liking_id, liked_id) values ($1, $2) RETURNING like_id"
-	row := r.db.QueryRow(query, liking, liked)
+
+	if likingId == likedId {
+		return 0, fmt.Errorf("Not allowed to like yourself")
+	}
+
+	query := `
+	INSERT INTO likes (liking_id, liked_id)
+	VALUES ($1, $2)
+	RETURNING like_id;
+	`
+	row := r.db.QueryRow(query, likingId, likedId)
 
 	if err := row.Scan(&id); err != nil {
 		return 0, err
@@ -48,10 +59,14 @@ func (r *RatingsPostgres) GetAllLikes(userId uint64) ([]uint64, error) {
 	return ids, nil
 }
 
-func (r *RatingsPostgres) AddDislike(disliking, disliked uint64) (uint64, error) {
+func (r *RatingsPostgres) AddDislike(dislikingId, dislikedId uint64) (uint64, error) {
 	var id uint64
+
+	if dislikingId == dislikedId {
+		return 0, fmt.Errorf("Not allowed to like yourself")
+	}
 	query := "INSERT INTO dislikes (disliking_id, disliked_id) values ($1, $2) RETURNING dislike_id"
-	row := r.db.QueryRow(query, disliking, disliked)
+	row := r.db.QueryRow(query, dislikingId, dislikedId)
 
 	if err := row.Scan(&id); err != nil {
 		return 0, err

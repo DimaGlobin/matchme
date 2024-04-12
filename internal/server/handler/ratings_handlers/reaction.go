@@ -47,9 +47,9 @@ func (rh *ReactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	subjectId := r.Context().Value(auth.UserCtx).(uint64)
 
-	matchId, reactionId, err := rh.service.RatingsService.AddReaction(reaction, subjectId, objectId)
+	reactionId, matchId, err := rh.service.RatingsService.AddReaction(reaction, subjectId, objectId)
 	if err != nil {
-		msg := "Unable to add reaction id from url query"
+		msg := err.Error()
 		log.Error(msg, sl.Err(err))
 		api.Respond(w, r, http.StatusInternalServerError, msg)
 
