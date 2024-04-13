@@ -43,9 +43,9 @@ func (s *SignUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	id, err := s.service.UsersService.CreateUser(user)
 	if err != nil {
-		msg := "Unable to create user"
+		msg := err.Error()
 		log.Error(msg, sl.Err(err))
-		api.Respond(w, r, http.StatusInternalServerError, "")
+		api.Respond(w, r, http.StatusInternalServerError, err.Error())
 
 		return
 	}

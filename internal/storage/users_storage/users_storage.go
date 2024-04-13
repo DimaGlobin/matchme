@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/DimaGlobin/matchme/internal/model"
+	"github.com/DimaGlobin/matchme/internal/storage/storage_errors"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -22,16 +23,39 @@ func (u *UserPostgres) CreateUser(user *model.User) (uint64, error) {
 
 	row := u.db.QueryRow(query, user.Email, user.PhoneNumber, user.Name, user.Password, user.Sex, user.Age, user.BirthDate, user.City, user.Description, user.Role, user.MaxAge)
 	if err := row.Scan(&id); err != nil {
-		return 0, err
+		return 0, storage_errors.ProcessPostgresError(err)
 	}
 
 	return id, nil
 }
 
 func (u *UserPostgres) GetRandomUser(userId uint64) (*model.User, error) {
-	user := &model.User{}
-	query := "SELECT * FROM users WHERE user_id!=$1 ORDER BY RANDOM() LIMIT 1" // It's the worst recommendational system I've ever seen :)
-	if err := u.db.Get(user, query, userId); err != nil {
+	user, err := u.GetUserById(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	var recUser = &model.User{}
+
+	query := `
+	SELECT *
+	FROM users
+	WHERE user_id != $1
+	AND user_id NOT IN (
+		SELECT liked_id FROM likes WHERE liking_id = $1
+		UNION
+		SELECT disliked_id FROM dislikes WHERE disliking_id = $1
+	)
+	AND user_id NOT IN (
+		SELECT disliking_id FROM dislikes WHERE disliked_id = $1
+	)
+	AND sex != $2
+	ORDER BY RANDOM()
+	LIMIT 1;
+	`
+	//TODO: описать тест кейсы для такого функицонала
+
+	if err := u.db.Get(recUser, query, userId, user.Sex); err != nil {
 		return nil, err
 	}
 
@@ -43,7 +67,7 @@ func (u *UserPostgres) GetUser(email string) (*model.User, error) {
 	// fmt.Printf("email: %s, password: %s", email)
 	query := "SELECT * FROM users WHERE email=$1"
 	if err := u.db.Get(user, query, email); err != nil {
-		return nil, err
+		return nil, storage_errors.ProcessPostgresError(err)
 	}
 
 	return user, nil
@@ -53,7 +77,7 @@ func (u *UserPostgres) GetUserById(id uint64) (*model.User, error) {
 	user := &model.User{}
 	query := "SELECT * FROM users where user_id=$1"
 	if err := u.db.Get(user, query, id); err != nil {
-		return nil, err
+		return nil, storage_errors.ProcessPostgresError(err)
 	}
 
 	return user, nil

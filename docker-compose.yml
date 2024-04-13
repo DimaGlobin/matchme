@@ -13,6 +13,7 @@ services:
     depends_on:
       - db
       - nginx
+      - redis
     environment:
       - DB_PASSWORD=qwerty
     networks:
@@ -82,9 +83,21 @@ services:
       - minio2
     networks:
       - matchme_network
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-volume:/data
+    networks:
+      - matchme_network
     
 volumes:
   db-volume:
+  redis-volume:
   data1-1:
   data1-2:
   data2-1:
