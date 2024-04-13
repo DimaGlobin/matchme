@@ -49,8 +49,8 @@ func (s *UpdateUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
-	fmt.Println(updates)
+	
+	// fmt.Println(updates)
 
 	user_id := r.Context().Value(auth.UserCtx).(uint64)
 	err = s.service.UsersService.UpdateUser(user_id, updates)

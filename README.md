@@ -3,11 +3,17 @@
 ## Description.
 
 There is a code of backend of dating service "MatchMe".
+### Technology stack:
+* Golang
+* PostgresQL
+* Minio
+* Redis
+* Docker
+* docker-compose
+* Nginx
 
 ## Required
 *make*
-
-*go*
 
 *docker*
 
@@ -15,4 +21,10 @@ There is a code of backend of dating service "MatchMe".
 
 ```
 make run
+```
+
+## Clean
+
+```
+make clean
 ```
