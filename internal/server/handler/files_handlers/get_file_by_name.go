@@ -39,7 +39,7 @@ func (g *GetFileByNameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	userId := r.Context().Value(auth.UserCtx).(uint64)
 
-	file, err := g.service.GetFileByName(r.Context(), userId, filename)
+	file, err := g.service.FilesServiceInt.GetFileByName(userId, filename)
 	if err != nil {
 		msg := "Unable to get file"
 		log.Error(msg, sl.Err(err))

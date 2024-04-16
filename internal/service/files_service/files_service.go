@@ -1,12 +1,12 @@
 package files_service
 
 import (
-	"context"
 	"fmt"
 	"io"
 
 	"github.com/DimaGlobin/matchme/internal/model"
-	"github.com/DimaGlobin/matchme/internal/storage"
+	"github.com/DimaGlobin/matchme/internal/storage/files_data_storage"
+	"github.com/DimaGlobin/matchme/internal/storage/files_storage"
 )
 
 const (
@@ -14,19 +14,18 @@ const (
 )
 
 type FilesService struct {
-	filesStorage     storage.FilesStorage
-	filesDataStorage storage.FilesDataStorage
+	filesStorage     files_storage.FilesStorage
+	filesDataStorage files_data_storage.FilesDataStorage
 }
 
-func NewFilesService(filesStorage storage.FilesStorage, filesDataStorage storage.FilesDataStorage) *FilesService {
+func NewFilesService(filesStorage files_storage.FilesStorage, filesDataStorage files_data_storage.FilesDataStorage) *FilesService {
 	return &FilesService{
 		filesStorage:     filesStorage,
 		filesDataStorage: filesDataStorage,
 	}
 }
 
-func (f *FilesService) UploadFile(ctx context.Context, fd *model.FileData, file io.Reader) (uint64, error) {
-
+func (f *FilesService) UploadFile(fd *model.FileData, file io.Reader) (uint64, error) {
 	count, err := f.filesDataStorage.GetFilesCount(fd.UserId)
 	if err != nil {
 		return 0, err
@@ -35,20 +34,20 @@ func (f *FilesService) UploadFile(ctx context.Context, fd *model.FileData, file 
 		return 0, fmt.Errorf("Files limit exceeded")
 	}
 
-	if err := f.filesStorage.UploadFile(ctx, fd, file); err != nil {
+	if err := f.filesStorage.UploadFile(fd, file); err != nil {
 		return 0, err
 	}
 
 	return f.filesDataStorage.AddFile(fd)
 }
 
-func (f *FilesService) GetFileById(ctx context.Context, fileId, userId uint64) (*model.File, error) {
+func (f *FilesService) GetFileById(fileId, userId uint64) (*model.File, error) {
 	fd, err := f.filesDataStorage.GetFileById(fileId, userId)
 	if err != nil {
 		return nil, err
 	}
 
-	buf, err := f.filesStorage.GetFile(ctx, userId, fd)
+	buf, err := f.filesStorage.GetFile(userId, fd)
 	if err != nil {
 		return nil, err
 	}
@@ -59,13 +58,13 @@ func (f *FilesService) GetFileById(ctx context.Context, fileId, userId uint64) (
 	}, nil
 }
 
-func (f *FilesService) GetFileByName(ctx context.Context, userId uint64, filename string) (*model.File, error) {
+func (f *FilesService) GetFileByName(userId uint64, filename string) (*model.File, error) {
 	fd, err := f.filesDataStorage.GetFileByName(userId, filename)
 	if err != nil {
 		return nil, err
 	}
 
-	buf, err := f.filesStorage.GetFile(ctx, userId, fd)
+	buf, err := f.filesStorage.GetFile(userId, fd)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +75,7 @@ func (f *FilesService) GetFileByName(ctx context.Context, userId uint64, filenam
 	}, nil
 }
 
-func (f *FilesService) GetAllFiles(ctx context.Context, userId uint64) ([]*model.File, error) {
+func (f *FilesService) GetAllFiles(userId uint64) ([]*model.File, error) {
 	files := []*model.File{}
 	filesData, err := f.filesDataStorage.GetAllFiles(userId)
 	if err != nil {
@@ -84,7 +83,7 @@ func (f *FilesService) GetAllFiles(ctx context.Context, userId uint64) ([]*model
 	}
 
 	for _, v := range filesData {
-		buf, err := f.filesStorage.GetFile(ctx, userId, v)
+		buf, err := f.filesStorage.GetFile(userId, v)
 		if err != nil {
 			return nil, err
 		}
@@ -97,13 +96,13 @@ func (f *FilesService) GetAllFiles(ctx context.Context, userId uint64) ([]*model
 	return files, nil
 }
 
-func (f *FilesService) DeleteFile(ctx context.Context, fileId, userId uint64) error {
+func (f *FilesService) DeleteFile(fileId, userId uint64) error {
 	fd, err := f.filesDataStorage.GetFileById(fileId, userId)
 	if err != nil {
 		return err
 	}
 
-	err = f.filesStorage.DeleteFile(ctx, userId, fd)
+	err = f.filesStorage.DeleteFile(userId, fd)
 	if err != nil {
 		return err
 	}

@@ -47,7 +47,7 @@ func (rh *ReactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	subjectId := r.Context().Value(auth.UserCtx).(uint64)
 
-	reactionId, matchId, err := rh.service.RatingsService.AddReaction(reaction, subjectId, objectId)
+	reactionId, matchId, err := rh.service.RatingsServiceInt.AddReaction(reaction, subjectId, objectId)
 	if err != nil {
 		msg := err.Error()
 		log.Error(msg, sl.Err(err))

@@ -43,7 +43,7 @@ func (s *SigninHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := s.service.UsersService.GenerateToken(body.Email, body.Password)
+	token, err := s.service.UsersServiceInt.GenerateToken(body.Email, body.Password)
 	if err != nil {
 		msg := "Unable to create jwt token"
 		log.Error(msg, sl.Err(err))

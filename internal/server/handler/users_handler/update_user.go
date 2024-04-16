@@ -1,7 +1,6 @@
 package users_handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/DimaGlobin/matchme/internal/lib/api"
@@ -42,18 +41,18 @@ func (s *UpdateUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !updates.Valid() {
+	if err := updates.Valid(); err != nil {
 		msg := "Invalid request body"
 		log.Error(msg)
 		api.Respond(w, r, http.StatusBadRequest, msg)
 
 		return
 	}
-	
+
 	// fmt.Println(updates)
 
 	user_id := r.Context().Value(auth.UserCtx).(uint64)
-	err = s.service.UsersService.UpdateUser(user_id, updates)
+	err = s.service.UsersServiceInt.UpdateUser(user_id, updates)
 	if err != nil {
 		msg := "Cannot update user"
 		log.Error(msg, sl.Err(err))

@@ -31,7 +31,7 @@ func (ru *RateUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	userId := r.Context().Value(auth.UserCtx).(uint64)
 
-	user, err := ru.service.RatingsService.RecommendUser(userId)
+	user, err := ru.service.RatingsServiceInt.RecommendUser(userId)
 	if err != nil {
 		msg := "Unable to get user"
 		log.Error(msg, sl.Err(err))
@@ -42,11 +42,12 @@ func (ru *RateUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	log.Info("User was successfully sent")
 	api.Respond(w, r, http.StatusOK, map[string]interface{}{
-		"user": model.UserResponse{
+		"user": model.UserRecommendation{
 			Id:          user.Id,
 			Name:        user.Name,
 			Age:         user.Age,
 			Description: user.Description,
 		},
+		"validationToken": nil,
 	})
 }

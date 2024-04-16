@@ -52,7 +52,7 @@ func (s *GetUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		id = r.Context().Value(auth.UserCtx).(uint64)
 	}
 
-	user, err := s.service.UsersService.GetuserById(r.Context(), id)
+	user, err := s.service.UsersServiceInt.GetuserById(id)
 	if err != nil {
 		msg := "Unable to get user"
 		log.Error(msg, sl.Err(err))
@@ -64,7 +64,7 @@ func (s *GetUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if idStr != "" {
 		log.Info("User was successfully sent")
 		api.Respond(w, r, http.StatusOK, map[string]interface{}{
-			"user": model.UserResponse{
+			"user": model.UserRecommendation{
 				Id:          user.Id,
 				Name:        user.Name,
 				Age:         user.Age,
@@ -76,6 +76,15 @@ func (s *GetUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.Respond(w, r, http.StatusOK, map[string]interface{}{
-		"user": user,
+		"user": model.UserInfo{
+			Email:       user.Email,
+			PhoneNumber: user.PhoneNumber,
+			Name:        user.Name,
+			Sex:         user.Sex,
+			Age:         user.Age,
+			City:        user.City,
+			Description: user.Description,
+			MaxAge:      user.MaxAge,
+		},
 	})
 }

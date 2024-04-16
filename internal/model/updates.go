@@ -9,24 +9,24 @@ func (u UpdateError) Error() string {
 }
 
 const (
-	emptyBody UpdateError = "Empty updates"
-	passwordChange UpdateError = "Cannot change password"
+	emptyBody         UpdateError = "Empty updates"
+	passwordChange    UpdateError = "Cannot change password"
 	birthDateChanging UpdateError = "Cannot change burth date"
 )
 
 func (u Updates) Valid() error {
 
 	if len(u) <= 0 {
-		return false
+		return emptyBody
 	}
 
 	if _, ok := u["password"]; ok {
-		return false
+		return passwordChange
 	}
 
 	if _, ok := u["birth_date"]; ok {
-		return false
+		return birthDateChanging
 	}
 
-	return true
+	return nil
 }

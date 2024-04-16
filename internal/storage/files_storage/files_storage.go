@@ -19,14 +19,16 @@ func NewFilesMinio(client *MinioClient) *FilesMinio {
 	}
 }
 
-func (f *FilesMinio) UploadFile(ctx context.Context, fd *model.FileData, file io.Reader) error {
+func (f *FilesMinio) UploadFile(fd *model.FileData, file io.Reader) error {
+	ctx := context.TODO()
 	objectName := fmt.Sprintf("%d/%s", fd.UserId, fd.FileName)
 
 	_, err := f.client.minioClient.PutObject(ctx, f.client.bucketName, objectName, file, fd.Size, minio.PutObjectOptions{})
 	return err
 }
 
-func (f *FilesMinio) GetFile(ctx context.Context, userId uint64, fd *model.FileData) ([]byte, error) {
+func (f *FilesMinio) GetFile(userId uint64, fd *model.FileData) ([]byte, error) {
+	ctx := context.TODO()
 	url := fmt.Sprintf("%d/%s", userId, fd.FileName)
 	obj, err := f.client.minioClient.GetObject(ctx, f.client.bucketName, url, minio.GetObjectOptions{})
 	if err != nil {
@@ -49,7 +51,8 @@ func (f *FilesMinio) GetFile(ctx context.Context, userId uint64, fd *model.FileD
 	return buffer, nil
 }
 
-func (f *FilesMinio) DeleteFile(ctx context.Context, userId uint64, fd *model.FileData) error {
+func (f *FilesMinio) DeleteFile(userId uint64, fd *model.FileData) error {
+	ctx := context.TODO()
 	url := fmt.Sprintf("%d/%s", userId, fd.FileName)
 
 	return f.client.minioClient.RemoveObject(ctx, f.client.bucketName, url, minio.RemoveObjectOptions{})

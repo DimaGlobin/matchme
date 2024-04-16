@@ -52,7 +52,7 @@ func (u *UploadFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fileData.Size = header.Size
 	fileData.UserId = r.Context().Value(auth.UserCtx).(uint64)
 
-	id, err := u.service.FilesService.UploadFile(r.Context(), fileData, reqFile)
+	id, err := u.service.FilesServiceInt.UploadFile(fileData, reqFile)
 	if err != nil {
 		msg := "Cannot upload file"
 		u.logger.Error(msg, sl.Err(err))

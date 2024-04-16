@@ -42,7 +42,7 @@ func (d *DeleteFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := d.service.DeleteFile(r.Context(), fileId, userId); err != nil {
+	if err := d.service.FilesServiceInt.DeleteFile(fileId, userId); err != nil {
 		msg := "Cannot delete file"
 		log.Error(msg, sl.Err(err))
 		api.Respond(w, r, http.StatusInternalServerError, msg)

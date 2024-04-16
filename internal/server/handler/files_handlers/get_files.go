@@ -34,7 +34,7 @@ func (g *GetFilesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writer := multipart.NewWriter(w)
 		w.Header().Set("Content-Type", writer.FormDataContentType())
 
-		files, err := g.service.GetAllFiles(r.Context(), userId)
+		files, err := g.service.FilesServiceInt.GetAllFiles(userId)
 		if err != nil {
 			msg := "Unable to get files"
 			log.Error(msg, sl.Err(err))

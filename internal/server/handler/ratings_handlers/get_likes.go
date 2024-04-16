@@ -30,7 +30,7 @@ func (g *GetLikesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	userId := r.Context().Value(auth.UserCtx).(uint64)
 
-	likes, err := g.service.RatingsService.GetAllLikes(userId)
+	likes, err := g.service.RatingsServiceInt.GetAllLikes(userId)
 	if err != nil {
 		msg := "Unable to get likes"
 		log.Error(msg, sl.Err(err))

@@ -41,7 +41,7 @@ func (s *SignUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := s.service.UsersService.CreateUser(user)
+	id, err := s.service.UsersServiceInt.CreateUser(user)
 	if err != nil {
 		msg := err.Error()
 		log.Error(msg, sl.Err(err))

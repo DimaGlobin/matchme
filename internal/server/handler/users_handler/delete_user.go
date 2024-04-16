@@ -29,7 +29,7 @@ func (s *DeleteUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 
 	user_id := r.Context().Value(auth.UserCtx).(uint64)
-	err := s.service.UsersService.DeleteUser(user_id)
+	err := s.service.UsersServiceInt.DeleteUser(user_id)
 	if err != nil {
 		msg := "Cannot delete user"
 		log.Error(msg, sl.Err(err))
