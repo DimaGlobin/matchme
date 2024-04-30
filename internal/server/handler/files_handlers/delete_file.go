@@ -25,6 +25,15 @@ func NewDeleteFileHandler(log *slog.Logger, srv *service.Service) *DeleteFileHan
 	}
 }
 
+// @Summary DeleteFileById
+// @Security BearerAuth
+// @Tags api
+// @Description Delete user's photo
+// @ID delete-photo-by-id
+// @Success 200 {object} string "File was deleted successfully"
+// @Failure 400 {string} string "Empty file name"
+// @Failure 500 {string} string "Cannot parse url query"
+// @Router /api/photos/{id} [delete]
 func (d *DeleteFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := d.logger.With(
 		slog.String("request_id", middleware.GetReqID(r.Context())),

@@ -1,7 +1,8 @@
 package model
 
-type Updates map[string]interface{}
-
+type Updates struct {
+	Updates map[string]interface{} `json:"updates" swaggertype:"object,string" example:"email:adb@wda.com, name:Sara"`
+}
 type UpdateError string
 
 func (u UpdateError) Error() string {
@@ -16,15 +17,15 @@ const (
 
 func (u Updates) Valid() error {
 
-	if len(u) <= 0 {
+	if len(u.Updates) <= 0 {
 		return emptyBody
 	}
 
-	if _, ok := u["password"]; ok {
+	if _, ok := u.Updates["password"]; ok {
 		return passwordChange
 	}
 
-	if _, ok := u["birth_date"]; ok {
+	if _, ok := u.Updates["birth_date"]; ok {
 		return birthDateChanging
 	}
 

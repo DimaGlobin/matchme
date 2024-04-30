@@ -25,6 +25,18 @@ func NewUpdateUserHandler(log *slog.Logger, srv *service.Service) *UpdateUserHan
 	}
 }
 
+// @Summary UpdateUser
+// @Security BearerAuth
+// @Tags api
+// @Description update user info
+// @ID update-user
+// @Accept  json
+// @Produce  json
+// @Param input body model.Updates true "User updates"
+// @Success 200
+// @Failure 400,401
+// @Failure 500
+// @Router /api/users/ [put]
 func (s *UpdateUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := s.logger.With(
 		slog.String("request_id", middleware.GetReqID(r.Context())),

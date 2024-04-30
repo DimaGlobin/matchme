@@ -9,6 +9,7 @@ import (
 	"github.com/DimaGlobin/matchme/internal/lib/api"
 	"github.com/DimaGlobin/matchme/internal/lib/logger/sl"
 	"github.com/DimaGlobin/matchme/internal/middleware/auth"
+	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -27,6 +28,17 @@ func NewReactionHandler(log *slog.Logger, srv *service.Service) *ReactionHandler
 	}
 }
 
+// @Summary Reaction
+// @Security BearerAuth
+// @Tags api
+// @Description react to user
+// @ID react
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.Reaction
+// @Failure 400,401
+// @Failure 500
+// @Router /api/action/{like/dislike}}/{id} [post]
 func (rh *ReactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := rh.logger.With(
 		slog.String("request_id", middleware.GetReqID(r.Context())),
@@ -57,8 +69,9 @@ func (rh *ReactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info(fmt.Sprintf("Reacted %s successfully, reactionId: %d", reaction, reactionId))
-	api.Respond(w, r, http.StatusOK, map[string]interface{}{ //TODO: Bad response body, refactore in future
-		reaction + "_id": reactionId,
-		"match_id":       matchId,
+	api.Respond(w, r, http.StatusOK, model.Reaction{
+		ReactionType: reaction,
+		ReactionId:   reactionId,
+		MatchId:      matchId,
 	})
 }

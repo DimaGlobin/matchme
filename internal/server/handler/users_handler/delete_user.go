@@ -23,6 +23,16 @@ func NewDeleteUserHandler(log *slog.Logger, srv *service.Service) *DeleteUserHan
 	}
 }
 
+// @Summary DeleteUser
+// @Security BearerAuth
+// @Tags api
+// @Description delete user
+// @ID delete-user
+// @Accept  json
+// @Produce  json
+// @Success 200 
+// @Failure 500
+// @Router /api/users/ [delete]
 func (s *DeleteUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := s.logger.With(
 		slog.String("request_id", middleware.GetReqID(r.Context())),

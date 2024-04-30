@@ -9,7 +9,7 @@ import (
 type User struct {
 	Id           uint64    `json:"-" db:"user_id"`
 	Email        string    `json:"email" binding:"required" db:"email"`
-	PhoneNumber  string    `json:"phone_number" binding:"reuqired" db:"phone_number"`
+	PhoneNumber  string    `json:"phone_number" binding:"required" db:"phone_number"`
 	Name         string    `json:"name" binding:"required" db:"name"`
 	Password     string    `json:"password" binding:"required" db:"password_hash"`
 	Sex          string    `json:"sex" db:"sex"`
@@ -17,7 +17,7 @@ type User struct {
 	BirthDate    time.Time `json:"birth_date" binding:"required" db:"birth_date"`
 	City         string    `json:"city" binding:"required" db:"city"`
 	Description  string    `json:"description" db:"description"`
-	Role         string    `db:"role"`
+	Role         string    `json:"-" db:"role"`
 	MaxAge       int       `json:"max_age" binding:"required" db:"max_age"`
 	CreationDate time.Time `json:"-" db:"creation_date"`
 	// Radius      int       `db:"radius"`

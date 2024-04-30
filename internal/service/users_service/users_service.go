@@ -21,7 +21,8 @@ type UsersService struct {
 
 type tokenClaims struct {
 	jwt.RegisteredClaims
-	UserId uint64 `json:"user_id"`
+	UserId   uint64 `json:"user_id"`
+	UserRole string `json:"user_role"`
 }
 
 func NewUsersService(usersStorage users_storage.UsersStorage) *UsersService {
@@ -57,6 +58,7 @@ func (u *UsersService) GenerateToken(email string, password string) (string, err
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 		user.Id,
+		user.Role,
 	})
 
 	return token.SignedString([]byte(os.Getenv("SECRET")))

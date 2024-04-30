@@ -1,8 +1,7 @@
 package ratings_storage
 
 import (
-	"fmt"
-
+	"github.com/DimaGlobin/matchme/internal/storage/storage_errors"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -18,7 +17,19 @@ func (r *RatingsPostgres) AddLike(likingId, likedId uint64) (uint64, error) {
 	var id uint64
 
 	if likingId == likedId {
-		return 0, fmt.Errorf("Not allowed to like yourself")
+		return 0, storage_errors.AlreadyRated
+	}
+
+	likeRes, err := r.CheckLikeExistance(likingId, likedId)
+	if err != nil {
+		return 0, err
+	}
+	dislikeRes, err := r.CheckDislikeExistance(likingId, likedId)
+	if err != nil {
+		return 0, err
+	}
+	if likeRes || dislikeRes {
+		return 0, storage_errors.AlreadyRated
 	}
 
 	query := `
@@ -63,8 +74,21 @@ func (r *RatingsPostgres) AddDislike(dislikingId, dislikedId uint64) (uint64, er
 	var id uint64
 
 	if dislikingId == dislikedId {
-		return 0, fmt.Errorf("Not allowed to like yourself")
+		return 0, storage_errors.SelfRating
 	}
+
+	likeRes, err := r.CheckLikeExistance(dislikingId, dislikedId)
+	if err != nil {
+		return 0, err
+	}
+	dislikeRes, err := r.CheckDislikeExistance(dislikingId, dislikedId)
+	if err != nil {
+		return 0, err
+	}
+	if likeRes || dislikeRes {
+		return 0, storage_errors.AlreadyRated
+	}
+
 	query := "INSERT INTO dislikes (disliking_id, disliked_id) values ($1, $2) RETURNING dislike_id"
 	row := r.db.QueryRow(query, dislikingId, dislikedId)
 
@@ -90,7 +114,21 @@ func (r *RatingsPostgres) AddMatch(userId1, userId2 uint64) (uint64, error) {
 func (r *RatingsPostgres) CheckLikeExistance(likingId, likedId uint64) (bool, error) {
 	var count uint
 	query := "SELECT COUNT(*) FROM likes where liking_id=$1 AND liked_id=$2"
-	if err := r.db.Get(&count, query, likedId, likingId); err != nil {
+	if err := r.db.Get(&count, query, likingId, likedId); err != nil {
+		return false, err
+	}
+
+	if count == 0 {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (r *RatingsPostgres) CheckDislikeExistance(dislikingId, dislikedId uint64) (bool, error) {
+	var count uint
+	query := "SELECT COUNT(*) FROM likes where liking_id=$1 AND liked_id=$2"
+	if err := r.db.Get(&count, query, dislikingId, dislikedId); err != nil {
 		return false, err
 	}
 

@@ -24,9 +24,9 @@ func NewUsersPostgres(cacheStorage cache_storage.CacheStorage, db *sqlx.DB) *Use
 
 func (u *UserPostgres) CreateUser(user *model.User) (uint64, error) {
 	var id uint64
-	query := "INSERT INTO users (email, phone_number, name, password_hash, sex, age, birth_date, city, description, role, max_age) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING user_id"
+	query := "INSERT INTO users (email, phone_number, name, password_hash, sex, age, birth_date, city, description, max_age) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING user_id"
 
-	row := u.db.QueryRow(query, user.Email, user.PhoneNumber, user.Name, user.Password, user.Sex, user.Age, user.BirthDate, user.City, user.Description, user.Role, user.MaxAge)
+	row := u.db.QueryRow(query, user.Email, user.PhoneNumber, user.Name, user.Password, user.Sex, user.Age, user.BirthDate, user.City, user.Description, user.MaxAge)
 	if err := row.Scan(&id); err != nil {
 		return 0, storage_errors.ProcessPostgresError(err)
 	}
@@ -107,7 +107,7 @@ func (u *UserPostgres) UpdateUser(id uint64, updates model.Updates) error {
 
 	count := 1
 	var values []interface{}
-	for k, v := range updates {
+	for k, v := range updates.Updates {
 		query += " " + k + fmt.Sprintf(" = $%d,", count)
 		switch val := v.(type) {
 		case int:

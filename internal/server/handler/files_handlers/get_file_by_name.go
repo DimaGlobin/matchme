@@ -25,6 +25,16 @@ func NewGetFileByNameHandler(log *slog.Logger, srv *service.Service) *GetFileByN
 	}
 }
 
+// @Summary GetPhotoByName
+// @Security BearerAuth
+// @Tags api
+// @Description Get user's photo and send like multipart/form-data
+// @ID get-photo-by-name
+// @Produce multipart/form-data
+// @Success 200 {object} string "File was successfully sent"
+// @Failure 400 {string} string "Empty file name"
+// @Failure 500
+// @Router /api/photos/filename/{filename} [get]
 func (g *GetFileByNameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := g.logger.With(
 		slog.String("request_id", middleware.GetReqID(r.Context())),
@@ -32,8 +42,12 @@ func (g *GetFileByNameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	parts := strings.Split(r.URL.Path, "/") // I understand that it's not the best solution but
 	filename := parts[len(parts)-1]         // I'm tired of searching how to do it using built in
-											// chi tools :( yours CEO
-
+	// chi tools :( yours CEO
+	if filename == "" {
+		msg := "Empty file name"
+		api.Respond(w, r, http.StatusBadRequest, msg)
+		return
+	}
 	// filename := chi.URLParam(r, "filename")
 	fmt.Println(filename)
 

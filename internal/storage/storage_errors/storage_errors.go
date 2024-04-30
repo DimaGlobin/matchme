@@ -22,3 +22,8 @@ const (
 
 	fileIdAlreadyExists StorageError = "File with such id already exists"
 )
+
+const (
+	AlreadyRated StorageError = "User already has been rated"
+	SelfRating   StorageError = "Self rating not allowed"
+)
