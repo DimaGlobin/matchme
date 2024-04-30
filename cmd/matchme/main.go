@@ -29,6 +29,17 @@ TODO: init config
 TODO: init logger
 */
 
+// @title MatchMe API
+// @version 1.0
+// @description API Server for MatchMe application
+
+// @host localhost:8084
+// @basePath /
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 func main() {
 	// fmt.Println(os.Getwd())
 	if err := godotenv.Load("./config/.env"); err != nil {

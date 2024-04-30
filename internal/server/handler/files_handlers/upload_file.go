@@ -13,6 +13,10 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+type PhotoIdResponse struct {
+	Id uint64 `json:"id"`
+}
+
 type UploadFileHandler struct {
 	logger  *slog.Logger
 	service *service.Service
@@ -25,6 +29,17 @@ func NewUploadFileHandler(log *slog.Logger, srv *service.Service) *UploadFileHan
 	}
 }
 
+// @Summary UploadPhoto
+// @Security BearerAuth
+// @Tags api
+// @Description upload photo
+// @ID upload-photo
+// @Accept  json
+// @Produce  json
+// @Param file formData file true "Photo to upload"
+// @Success 200 {object} PhotoIdResponse
+// @Failure 500
+// @Router /api/photos/ [post]
 func (u *UploadFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// for name, values := range r.Header {
@@ -52,7 +67,14 @@ func (u *UploadFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fileData.Size = header.Size
 	fileData.UserId = r.Context().Value(auth.UserCtx).(uint64)
 
-	id, err := u.service.FilesService.UploadFile(r.Context(), fileData, reqFile)
+	if fileData.Size > 3*1024*1024 {
+		msg := "File size shiuld be less than 3 MB"
+		api.Respond(w, r, http.StatusBadRequest, msg)
+
+		return
+	}
+
+	id, err := u.service.FilesServiceInt.UploadFile(fileData, reqFile)
 	if err != nil {
 		msg := "Cannot upload file"
 		u.logger.Error(msg, sl.Err(err))
@@ -62,7 +84,7 @@ func (u *UploadFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info(fmt.Sprintf("User was successfully created, id: %d", id))
-	api.Respond(w, r, http.StatusOK, map[string]interface{}{
-		"id": id,
+	api.Respond(w, r, http.StatusOK, PhotoIdResponse{
+		Id: id,
 	})
 }

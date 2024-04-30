@@ -18,6 +18,10 @@ type SignUpHandler struct {
 	service *service.Service
 }
 
+type idResponse struct {
+	Id uint64 `json:"id"`
+}
+
 func NewSignUpHandler(log *slog.Logger, srv *service.Service) *SignUpHandler {
 	return &SignUpHandler{
 		logger:  log,
@@ -25,6 +29,17 @@ func NewSignUpHandler(log *slog.Logger, srv *service.Service) *SignUpHandler {
 	}
 }
 
+// @Summary SignUp
+// @Tags auth
+// @Description signup
+// @ID sign-up
+// @Accept  json
+// @Produce  json
+// @Param input body model.User true "User information"
+// @Success 200 {object} idResponse "idResponse"
+// @Failure 400
+// @Failure 500
+// @Router /auth/sign_up [post]
 func (s *SignUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	user := &model.User{}
 
@@ -41,7 +56,7 @@ func (s *SignUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := s.service.UsersService.CreateUser(user)
+	id, err := s.service.UsersServiceInt.CreateUser(user)
 	if err != nil {
 		msg := err.Error()
 		log.Error(msg, sl.Err(err))
@@ -51,8 +66,8 @@ func (s *SignUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info(fmt.Sprintf("User was successfully created, id: %d", id))
-	api.Respond(w, r, http.StatusOK, map[string]interface{}{
-		"id": id,
+	api.Respond(w, r, http.StatusOK, idResponse{
+		Id: id,
 	})
 
 }

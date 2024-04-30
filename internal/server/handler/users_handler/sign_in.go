@@ -28,6 +28,21 @@ type SignInBody struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type tokenResp struct {
+	Token string `json:"token"`
+}
+
+// @Summary SignIn
+// @Tags auth
+// @Description login
+// @ID login
+// @Accept  json
+// @Produce  json
+// @Param input body SignInBody true "credentials"
+// @Success 200 {object} tokenResp "token"
+// @Failure 400
+// @Failure 500
+// @Router /auth/sign_in [post]
 func (s *SigninHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body := &SignInBody{}
 	log := s.logger.With(
@@ -43,7 +58,7 @@ func (s *SigninHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := s.service.UsersService.GenerateToken(body.Email, body.Password)
+	token, err := s.service.UsersServiceInt.GenerateToken(body.Email, body.Password)
 	if err != nil {
 		msg := "Unable to create jwt token"
 		log.Error(msg, sl.Err(err))
@@ -52,8 +67,8 @@ func (s *SigninHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.Respond(w, r, http.StatusOK, map[string]interface{}{
-		"token": token,
+	api.Respond(w, r, http.StatusOK, tokenResp{
+		Token: token,
 	})
 
 }

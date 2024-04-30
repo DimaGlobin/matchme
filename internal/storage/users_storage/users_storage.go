@@ -5,23 +5,28 @@ import (
 	"strings"
 
 	"github.com/DimaGlobin/matchme/internal/model"
+	"github.com/DimaGlobin/matchme/internal/storage/cache_storage"
 	"github.com/DimaGlobin/matchme/internal/storage/storage_errors"
 	"github.com/jmoiron/sqlx"
 )
 
 type UserPostgres struct {
-	db *sqlx.DB
+	cacheStorage cache_storage.CacheStorage
+	db           *sqlx.DB
 }
 
-func NewUsersPostgres(db *sqlx.DB) *UserPostgres {
-	return &UserPostgres{db: db}
+func NewUsersPostgres(cacheStorage cache_storage.CacheStorage, db *sqlx.DB) *UserPostgres {
+	return &UserPostgres{
+		cacheStorage: cacheStorage,
+		db:           db,
+	}
 }
 
 func (u *UserPostgres) CreateUser(user *model.User) (uint64, error) {
 	var id uint64
-	query := "INSERT INTO users (email, phone_number, name, password_hash, sex, age, birth_date, city, description, role, max_age) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING user_id"
+	query := "INSERT INTO users (email, phone_number, name, password_hash, sex, age, birth_date, city, description, max_age) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING user_id"
 
-	row := u.db.QueryRow(query, user.Email, user.PhoneNumber, user.Name, user.Password, user.Sex, user.Age, user.BirthDate, user.City, user.Description, user.Role, user.MaxAge)
+	row := u.db.QueryRow(query, user.Email, user.PhoneNumber, user.Name, user.Password, user.Sex, user.Age, user.BirthDate, user.City, user.Description, user.MaxAge)
 	if err := row.Scan(&id); err != nil {
 		return 0, storage_errors.ProcessPostgresError(err)
 	}
@@ -30,15 +35,15 @@ func (u *UserPostgres) CreateUser(user *model.User) (uint64, error) {
 }
 
 func (u *UserPostgres) GetRandomUser(userId uint64) (*model.User, error) {
+
+	var recUserId uint64
 	user, err := u.GetUserById(userId)
 	if err != nil {
 		return nil, err
 	}
 
-	var recUser = &model.User{}
-
 	query := `
-	SELECT *
+	SELECT user_id
 	FROM users
 	WHERE user_id != $1
 	AND user_id NOT IN (
@@ -55,11 +60,11 @@ func (u *UserPostgres) GetRandomUser(userId uint64) (*model.User, error) {
 	`
 	//TODO: описать тест кейсы для такого функицонала
 
-	if err := u.db.Get(recUser, query, userId, user.Sex); err != nil {
+	if err := u.db.Get(&recUserId, query, userId, user.Sex); err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return u.GetUserById(recUserId)
 }
 
 func (u *UserPostgres) GetUser(email string) (*model.User, error) {
@@ -75,9 +80,23 @@ func (u *UserPostgres) GetUser(email string) (*model.User, error) {
 
 func (u *UserPostgres) GetUserById(id uint64) (*model.User, error) {
 	user := &model.User{}
-	query := "SELECT * FROM users where user_id=$1"
-	if err := u.db.Get(user, query, id); err != nil {
-		return nil, storage_errors.ProcessPostgresError(err)
+
+	user, err := u.cacheStorage.GetUserFromCache(id)
+	if err == cache_storage.NoValueInCache {
+		user := &model.User{}
+
+		query := "SELECT * FROM users where user_id=$1"
+		if err := u.db.Get(user, query, id); err != nil {
+			return nil, storage_errors.ProcessPostgresError(err)
+		}
+
+		if err = u.cacheStorage.AddUserToCache(user); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else if err != nil {
+		return nil, err
 	}
 
 	return user, nil
@@ -88,7 +107,7 @@ func (u *UserPostgres) UpdateUser(id uint64, updates model.Updates) error {
 
 	count := 1
 	var values []interface{}
-	for k, v := range updates {
+	for k, v := range updates.Updates {
 		query += " " + k + fmt.Sprintf(" = $%d,", count)
 		switch val := v.(type) {
 		case int:

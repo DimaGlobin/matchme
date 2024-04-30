@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	_ "github.com/DimaGlobin/matchme/docs"
 	"github.com/DimaGlobin/matchme/internal/middleware/auth"
 	"github.com/DimaGlobin/matchme/internal/middleware/logger"
 	"github.com/DimaGlobin/matchme/internal/server/handler/files_handlers"
@@ -11,6 +12,7 @@ import (
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"golang.org/x/exp/slog"
 )
 
@@ -23,6 +25,10 @@ func NewRouter(log *slog.Logger, srv *service.Service) chi.Router {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
+	router.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8084/swagger/doc.json"), //The url pointing to API definition
+	))
+
 	router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("pong"))
@@ -33,8 +39,8 @@ func NewRouter(log *slog.Logger, srv *service.Service) chi.Router {
 	signInHandler := users_handler.NewSignInHandler(log, srv)
 	signUpHandler := users_handler.NewSignUpHandler(log, srv)
 
-	router.Post("/sign_up", signUpHandler.ServeHTTP)
-	router.Post("/sign_in", signInHandler.ServeHTTP)
+	router.Post("/auth/sign_up", signUpHandler.ServeHTTP)
+	router.Post("/auth/sign_in", signInHandler.ServeHTTP)
 
 	//---------------------------------------------------------
 
@@ -60,11 +66,12 @@ func NewApiRouter(log *slog.Logger, srv *service.Service) chi.Router {
 	//----------------------Users-----------------------------
 
 	getUserHandler := users_handler.NewGetUserHandler(log, srv)
+	getUserByIdHandler := users_handler.NewGetUserByIdHandler(log, srv)
 	updateUserHandler := users_handler.NewUpdateUserHandler(log, srv)
 	deleteUserhandler := users_handler.NewDeleteUserHandler(log, srv)
 
 	router.Route("/users", func(r chi.Router) {
-		r.Get("/{id}", getUserHandler.ServeHTTP) // TODO: Добавить доп условия на получение пользователей(чтобы любой не мог получить профиль любого)
+		r.Get("/{id}", getUserByIdHandler.ServeHTTP) // TODO: Добавить доп условия на получение пользователей(чтобы любой не мог получить профиль любого)
 		r.Get("/", getUserHandler.ServeHTTP)
 		r.Put("/", updateUserHandler.ServeHTTP)
 		r.Delete("/", deleteUserhandler.ServeHTTP)
@@ -98,7 +105,7 @@ func NewApiRouter(log *slog.Logger, srv *service.Service) chi.Router {
 	router.Route("/action", func(r chi.Router) {
 		r.Get("/rate", rateHadler.ServeHTTP)
 		r.Post("/like/{id}", reactionHandler.ServeHTTP)
-		r.Get("/likes", getLikesHandler.ServeHTTP)
+		r.Get("/like", getLikesHandler.ServeHTTP)
 		r.Post("/dislike/{id}", reactionHandler.ServeHTTP)
 	})
 

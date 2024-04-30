@@ -1,0 +1,462 @@
+basePath: /
+definitions:
+  files_handlers.PhotoIdResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  model.Reaction:
+    properties:
+      match_id:
+        type: integer
+      reaction_id:
+        type: integer
+      reaction_type:
+        type: string
+    type: object
+  model.Updates:
+    properties:
+      updates:
+        additionalProperties:
+          type: string
+        example:
+          ' name': Sara
+          email: adb@wda.com
+        type: object
+    type: object
+  model.User:
+    properties:
+      age:
+        type: integer
+      birth_date:
+        type: string
+      city:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      max_age:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+      phone_number:
+        type: string
+      sex:
+        type: string
+    required:
+    - age
+    - birth_date
+    - city
+    - email
+    - max_age
+    - name
+    - password
+    - phone_number
+    type: object
+  model.UserInfo:
+    properties:
+      age:
+        type: integer
+      city:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      max_age:
+        type: integer
+      name:
+        type: string
+      phone_number:
+        type: string
+      sex:
+        type: string
+    required:
+    - age
+    - city
+    - email
+    - max_age
+    - name
+    type: object
+  model.UserRecommendation:
+    properties:
+      age:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    required:
+    - age
+    - name
+    type: object
+  ratings_handlers.LikeUsersIds:
+    properties:
+      likes:
+        example:
+        - 1
+        - 2
+        - 3
+        - 4
+        items:
+          type: integer
+        type: array
+    type: object
+  users_handler.SignInBody:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  users_handler.idResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  users_handler.tokenResp:
+    properties:
+      token:
+        type: string
+    type: object
+host: localhost:8084
+info:
+  contact: {}
+  description: API Server for MatchMe application
+  title: MatchMe API
+  version: "1.0"
+paths:
+  /api/action/{like/dislike}}/{id}:
+    post:
+      consumes:
+      - application/json
+      description: react to user
+      operationId: react
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Reaction'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Reaction
+      tags:
+      - api
+  /api/action/like/:
+    get:
+      consumes:
+      - application/json
+      description: get all user who liked you
+      operationId: get-likes
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratings_handlers.LikeUsersIds'
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: GetLikes
+      tags:
+      - api
+  /api/action/rate/:
+    get:
+      consumes:
+      - application/json
+      description: get user to rate
+      operationId: rate
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UserRecommendation'
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Rate
+      tags:
+      - api
+  /api/photos/:
+    get:
+      description: Get all users's files and send it like multipart/form-data
+      operationId: get-all-files
+      produces:
+      - multipart/form-data
+      responses:
+        "200":
+          description: Files was successfully sent
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: GetAllPhotos
+      tags:
+      - api
+    post:
+      consumes:
+      - application/json
+      description: upload photo
+      operationId: upload-photo
+      parameters:
+      - description: Photo to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/files_handlers.PhotoIdResponse'
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: UploadPhoto
+      tags:
+      - api
+  /api/photos/{id}:
+    delete:
+      description: Delete user's photo
+      operationId: delete-photo-by-id
+      responses:
+        "200":
+          description: File was deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Empty file name
+          schema:
+            type: string
+        "500":
+          description: Cannot parse url query
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: DeleteFileById
+      tags:
+      - api
+  /api/photos/filename/{filename}:
+    get:
+      description: Get user's photo and send like multipart/form-data
+      operationId: get-photo-by-name
+      produces:
+      - multipart/form-data
+      responses:
+        "200":
+          description: File was successfully sent
+          schema:
+            type: string
+        "400":
+          description: Empty file name
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: GetPhotoByName
+      tags:
+      - api
+  /api/photos/id/{id}:
+    get:
+      description: Get user's photo and send like multipart/form-data
+      operationId: get-photo-by-id
+      produces:
+      - multipart/form-data
+      responses:
+        "200":
+          description: File was successfully sent
+          schema:
+            type: string
+        "400":
+          description: Unable to get id from url query
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: GetPhotoById
+      tags:
+      - api
+  /api/users/:
+    delete:
+      consumes:
+      - application/json
+      description: delete user
+      operationId: delete-user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: DeleteUser
+      tags:
+      - api
+    get:
+      consumes:
+      - application/json
+      description: get user
+      operationId: get-user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UserInfo'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: GetUser
+      tags:
+      - api
+    put:
+      consumes:
+      - application/json
+      description: update user info
+      operationId: update-user
+      parameters:
+      - description: User updates
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.Updates'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: UpdateUser
+      tags:
+      - api
+  /api/users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get user by id
+      operationId: get-user-by-id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UserRecommendation'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: GetUserById
+      tags:
+      - api
+  /auth/sign_in:
+    post:
+      consumes:
+      - application/json
+      description: login
+      operationId: login
+      parameters:
+      - description: credentials
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/users_handler.SignInBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token
+          schema:
+            $ref: '#/definitions/users_handler.tokenResp'
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: SignIn
+      tags:
+      - auth
+  /auth/sign_up:
+    post:
+      consumes:
+      - application/json
+      description: signup
+      operationId: sign-up
+      parameters:
+      - description: User information
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: idResponse
+          schema:
+            $ref: '#/definitions/users_handler.idResponse'
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: SignUp
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

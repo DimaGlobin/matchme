@@ -46,7 +46,7 @@ func New(log *slog.Logger, srv *service.Service) func(next http.Handler) http.Ha
 				return
 			}
 
-			userId, err := srv.UsersService.ParseToken(headerParts[1])
+			userId, err := srv.UsersServiceInt.ParseToken(headerParts[1])
 			if err != nil {
 				msg := "Cannot parse token"
 				api.Respond(w, r, http.StatusUnauthorized, msg)

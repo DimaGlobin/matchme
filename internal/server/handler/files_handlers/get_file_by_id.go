@@ -26,6 +26,16 @@ func NewGetFileByIdHander(log *slog.Logger, srv *service.Service) *GetFileByIdHa
 	}
 }
 
+// @Summary GetPhotoById
+// @Security BearerAuth
+// @Tags api
+// @Description Get user's photo and send like multipart/form-data
+// @ID get-photo-by-id
+// @Produce multipart/form-data
+// @Success 200 {object} string "File was successfully sent"
+// @Failure 400 {string} string "Unable to get id from url query"
+// @Failure 500
+// @Router /api/photos/id/{id} [get]
 func (g *GetFileByIdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := g.logger.With(
 		slog.String("request_id", middleware.GetReqID(r.Context())),
@@ -44,7 +54,7 @@ func (g *GetFileByIdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	userId := r.Context().Value(auth.UserCtx).(uint64)
 
-	file, err := g.service.GetFileById(r.Context(), fileId, userId)
+	file, err := g.service.FilesServiceInt.GetFileById(fileId, userId)
 	if err != nil {
 		msg := "Unable to get file"
 		log.Error(msg, sl.Err(err))

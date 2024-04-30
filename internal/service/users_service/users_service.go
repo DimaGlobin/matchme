@@ -1,17 +1,13 @@
 package users_service
 
 import (
-	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"time"
 
 	"github.com/DimaGlobin/matchme/internal/model"
-	"github.com/DimaGlobin/matchme/internal/storage"
+	"github.com/DimaGlobin/matchme/internal/storage/users_storage"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,19 +16,18 @@ const (
 )
 
 type UsersService struct {
-	usersStorage storage.UsersStorage
-	cacheStorage storage.CacheStorage
+	usersStorage users_storage.UsersStorage
 }
 
 type tokenClaims struct {
 	jwt.RegisteredClaims
-	UserId uint64 `json:"user_id"`
+	UserId   uint64 `json:"user_id"`
+	UserRole string `json:"user_role"`
 }
 
-func NewUsersService(usersStorage storage.UsersStorage, cacheStorage storage.CacheStorage) *UsersService {
+func NewUsersService(usersStorage users_storage.UsersStorage) *UsersService {
 	return &UsersService{
 		usersStorage: usersStorage,
-		cacheStorage: cacheStorage,
 	}
 }
 
@@ -63,6 +58,7 @@ func (u *UsersService) GenerateToken(email string, password string) (string, err
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 		user.Id,
+		user.Role,
 	})
 
 	return token.SignedString([]byte(os.Getenv("SECRET")))
@@ -88,41 +84,8 @@ func (u *UsersService) ParseToken(accessToken string) (uint64, error) {
 	return claims.UserId, nil
 }
 
-func (u *UsersService) GetuserById(ctx context.Context, id uint64) (*model.User, error) {
-	key := fmt.Sprintf("user:%d", id)
-
-	// fmt.Println("key: ", key)
-
-	userStr, err := u.cacheStorage.GetFromCache(ctx, key)
-	// fmt.Printf("userStr: %s, error: %w", userStr, err)
-	if err == redis.Nil {
-
-		user, err := u.usersStorage.GetUserById(id)
-		if err != nil {
-			return nil, err
-		}
-
-		userData, err := json.Marshal(user)
-		if err != nil {
-			return nil, err
-		}
-
-		if err = u.cacheStorage.AddToCache(ctx, key, userData); err != nil {
-			return nil, err
-		}
-
-		return user, nil
-	} else if err != nil {
-		return nil, err
-	}
-
-	var user = &model.User{}
-	err = json.Unmarshal([]byte(userStr), user)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
+func (u *UsersService) GetuserById(id uint64) (*model.User, error) {
+	return u.usersStorage.GetUserById(id)
 }
 
 func (u *UsersService) UpdateUser(id uint64, updates model.Updates) error {

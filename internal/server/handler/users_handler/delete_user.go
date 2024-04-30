@@ -23,13 +23,23 @@ func NewDeleteUserHandler(log *slog.Logger, srv *service.Service) *DeleteUserHan
 	}
 }
 
+// @Summary DeleteUser
+// @Security BearerAuth
+// @Tags api
+// @Description delete user
+// @ID delete-user
+// @Accept  json
+// @Produce  json
+// @Success 200 
+// @Failure 500
+// @Router /api/users/ [delete]
 func (s *DeleteUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := s.logger.With(
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
 	user_id := r.Context().Value(auth.UserCtx).(uint64)
-	err := s.service.UsersService.DeleteUser(user_id)
+	err := s.service.UsersServiceInt.DeleteUser(user_id)
 	if err != nil {
 		msg := "Cannot delete user"
 		log.Error(msg, sl.Err(err))

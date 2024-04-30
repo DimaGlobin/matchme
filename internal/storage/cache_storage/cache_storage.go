@@ -2,8 +2,11 @@ package cache_storage
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"time"
 
+	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -17,15 +20,36 @@ func NewCacheRedis(rdb *redis.Client) *CacheRedis {
 	}
 }
 
-func (c *CacheRedis) AddToCache(ctx context.Context, key string, val interface{}) error {
-	return c.rdb.Set(ctx, key, val, 10*time.Minute).Err()
-}
+func (c *CacheRedis) AddUserToCache(user *model.User) error {
+	ctx := context.TODO()
+	key := fmt.Sprintf("user:%d", user.Id)
 
-func (c *CacheRedis) GetFromCache(ctx context.Context, key string) (string, error) {
-	val, err := c.rdb.Get(ctx, key).Result()
+	userData, err := json.Marshal(user)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return val, nil
+	return c.rdb.Set(ctx, key, userData, 10*time.Minute).Err()
+}
+
+func (c *CacheRedis) GetUserFromCache(userId uint64) (*model.User, error) {
+	key := fmt.Sprintf("user:%d", userId)
+	ctx := context.TODO()
+
+	userStr, err := c.rdb.Get(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return nil, NoValueInCache
+		}
+
+		return nil, err
+	}
+
+	var user = &model.User{}
+	err = json.Unmarshal([]byte(userStr), user)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

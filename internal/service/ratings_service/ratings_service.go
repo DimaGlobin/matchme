@@ -1,10 +1,9 @@
 package ratings_service
 
 import (
-	"fmt"
-
 	"github.com/DimaGlobin/matchme/internal/model"
-	"github.com/DimaGlobin/matchme/internal/storage"
+	"github.com/DimaGlobin/matchme/internal/storage/ratings_storage"
+	"github.com/DimaGlobin/matchme/internal/storage/users_storage"
 )
 
 const (
@@ -13,11 +12,11 @@ const (
 )
 
 type RatingsService struct {
-	ratingsStorage storage.RatingsStorage
-	usersStorage   storage.UsersStorage
+	ratingsStorage ratings_storage.RatingsStorage
+	usersStorage   users_storage.UsersStorage
 }
 
-func NewRatingsService(ratingsStorage storage.RatingsStorage, usersStorage storage.UsersStorage) *RatingsService {
+func NewRatingsService(ratingsStorage ratings_storage.RatingsStorage, usersStorage users_storage.UsersStorage) *RatingsService {
 	return &RatingsService{
 		ratingsStorage: ratingsStorage,
 		usersStorage:   usersStorage,
@@ -25,12 +24,7 @@ func NewRatingsService(ratingsStorage storage.RatingsStorage, usersStorage stora
 }
 
 func (r *RatingsService) RecommendUser(userId uint64) (*model.User, error) {
-	user, err := r.usersStorage.GetRandomUser(userId)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return r.usersStorage.GetRandomUser(userId)
 }
 
 func (r *RatingsService) AddReaction(reaction string, subjectId, objectId uint64) (uint64, uint64, error) {
@@ -65,7 +59,7 @@ func (r *RatingsService) AddReaction(reaction string, subjectId, objectId uint64
 		return id, 0, nil
 	}
 
-	return 0, 0, fmt.Errorf("Unsupported reaction")
+	return 0, 0, unsupReaction
 }
 
 func (r *RatingsService) GetAllLikes(userId uint64) ([]uint64, error) {

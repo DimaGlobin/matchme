@@ -9,7 +9,7 @@ CREATE TABLE users (
     password_hash TEXT NOT NULL,
     sex user_sex DEFAULT 'not_defined',
     age INTEGER NOT NULL,
-    birth_date DATE NOT NULL,
+    birth_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     city VARCHAR(255) NOT NULL,
     description TEXT,
     role user_role DEFAULT 'basic',
@@ -56,3 +56,11 @@ CREATE TABLE files (
     size BIGINT NOT NULL,
     upload_date TIMESTAMP default CURRENT_TIMESTAMP
 );
+
+INSERT INTO users (
+  email, phone_number, name, password_hash, 
+  sex, age, city, description, 
+  max_age, role
+) 
+values 
+  ('matchmeinc@gmail.com', '77777777777', 'admin', '$2a$10$wh0Tlm0KPpLJYD1EXz9K0eyeBu0DwHe87fZBZJIUHrhT2xXkFW45y', 'not_defined', 100, 'CITY', '', 100, 'admin');
