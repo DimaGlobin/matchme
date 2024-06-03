@@ -1,11 +1,37 @@
 basePath: /
 definitions:
+  api.ErrResponse:
+    properties:
+      err:
+        type: string
+    type: object
+  api.IdResponse:
+    properties:
+      id:
+        type: integer
+      msg:
+        type: string
+    type: object
+  api.TokenResponse:
+    properties:
+      msg:
+        type: string
+      token:
+        type: string
+    type: object
   files_handlers.PhotoIdResponse:
     properties:
       id:
         type: integer
     type: object
-  model.Reaction:
+  model.Dislike:
+    properties:
+      reaction_id:
+        type: integer
+      reaction_type:
+        type: string
+    type: object
+  model.Like:
     properties:
       match_id:
         type: integer
@@ -13,6 +39,16 @@ definitions:
         type: integer
       reaction_type:
         type: string
+    type: object
+  model.SignInBody:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
     type: object
   model.Updates:
     properties:
@@ -107,26 +143,6 @@ definitions:
           type: integer
         type: array
     type: object
-  users_handler.SignInBody:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  users_handler.idResponse:
-    properties:
-      id:
-        type: integer
-    type: object
-  users_handler.tokenResp:
-    properties:
-      token:
-        type: string
-    type: object
 host: localhost:8084
 info:
   contact: {}
@@ -134,19 +150,19 @@ info:
   title: MatchMe API
   version: "1.0"
 paths:
-  /api/action/{like/dislike}}/{id}:
+  /api/action/dislike/{id}:
     post:
       consumes:
       - application/json
       description: react to user
-      operationId: react
+      operationId: dislike
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Reaction'
+            $ref: '#/definitions/model.Dislike'
         "400":
           description: Bad Request
         "401":
@@ -176,6 +192,30 @@ paths:
       security:
       - BearerAuth: []
       summary: GetLikes
+      tags:
+      - api
+  /api/action/like/{id}:
+    post:
+      consumes:
+      - application/json
+      description: react to user
+      operationId: like
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Like'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Reaction
       tags:
       - api
   /api/action/rate/:
@@ -241,7 +281,7 @@ paths:
       summary: UploadPhoto
       tags:
       - api
-  /api/photos/{id}:
+  /api/photos/{filename}:
     delete:
       description: Delete user's photo
       operationId: delete-photo-by-id
@@ -412,18 +452,22 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/users_handler.SignInBody'
+          $ref: '#/definitions/model.SignInBody'
       produces:
       - application/json
       responses:
         "200":
-          description: token
+          description: TokenResponse
           schema:
-            $ref: '#/definitions/users_handler.tokenResp'
+            $ref: '#/definitions/api.TokenResponse'
         "400":
-          description: Bad Request
+          description: ErrResponse
+          schema:
+            $ref: '#/definitions/api.ErrResponse'
         "500":
-          description: Internal Server Error
+          description: ErrResponse
+          schema:
+            $ref: '#/definitions/api.ErrResponse'
       summary: SignIn
       tags:
       - auth
@@ -444,13 +488,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: idResponse
+          description: IdResponse
           schema:
-            $ref: '#/definitions/users_handler.idResponse'
+            $ref: '#/definitions/api.IdResponse'
         "400":
-          description: Bad Request
+          description: ErrResponse
+          schema:
+            $ref: '#/definitions/api.ErrResponse'
         "500":
-          description: Internal Server Error
+          description: ErrResponse
+          schema:
+            $ref: '#/definitions/api.ErrResponse'
       summary: SignUp
       tags:
       - auth

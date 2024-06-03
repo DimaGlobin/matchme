@@ -11,6 +11,7 @@ There is a code of backend of dating service "MatchMe".
 * Docker
 * docker-compose
 * Nginx
+* Swagger
 
 ## Required
 *make*

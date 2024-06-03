@@ -6,6 +6,7 @@ type RatingsStorage interface {
 	GetAllLikes(userId uint64) ([]uint64, error)
 	AddMatch(userId1, userId2 uint64) (uint64, error)
 	CheckLikeExistance(likingId, likedId uint64) (bool, error)
+	CheckDislikeExistance(dislikingId, dislikedId uint64) (bool, error)
 }
 
 var _ RatingsStorage = (*RatingsPostgres)(nil)

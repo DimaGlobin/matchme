@@ -96,8 +96,8 @@ func (f *FilesService) GetAllFiles(userId uint64) ([]*model.File, error) {
 	return files, nil
 }
 
-func (f *FilesService) DeleteFile(fileId, userId uint64) error {
-	fd, err := f.filesDataStorage.GetFileById(fileId, userId)
+func (f *FilesService) DeleteFile(userId uint64, filename string) error {
+	fd, err := f.filesDataStorage.GetFileByName(userId, filename)
 	if err != nil {
 		return err
 	}
@@ -107,5 +107,5 @@ func (f *FilesService) DeleteFile(fileId, userId uint64) error {
 		return err
 	}
 
-	return f.filesDataStorage.DeleteFile(fileId, userId)
+	return f.filesDataStorage.DeleteFile(fd.Id, userId)
 }

@@ -14,7 +14,8 @@ const (
 
 type RatingsServiceInt interface {
 	RecommendUser(userId uint64) (*model.User, error)
-	AddReaction(reaction string, subjectId, objectId uint64) (uint64, uint64, error)
+	AddLike(subjectId, objectId uint64) (uint64, uint64, error)
+	AddDislike(subjectId, objectId uint64) (uint64, error)
 	GetAllLikes(userId uint64) ([]uint64, error)
 }
 

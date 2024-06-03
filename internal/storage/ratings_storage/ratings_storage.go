@@ -1,7 +1,6 @@
 package ratings_storage
 
 import (
-	"github.com/DimaGlobin/matchme/internal/storage/storage_errors"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -15,22 +14,6 @@ func NewRatingsPostgres(db *sqlx.DB) *RatingsPostgres {
 
 func (r *RatingsPostgres) AddLike(likingId, likedId uint64) (uint64, error) {
 	var id uint64
-
-	if likingId == likedId {
-		return 0, storage_errors.AlreadyRated
-	}
-
-	likeRes, err := r.CheckLikeExistance(likingId, likedId)
-	if err != nil {
-		return 0, err
-	}
-	dislikeRes, err := r.CheckDislikeExistance(likingId, likedId)
-	if err != nil {
-		return 0, err
-	}
-	if likeRes || dislikeRes {
-		return 0, storage_errors.AlreadyRated
-	}
 
 	query := `
 	INSERT INTO likes (liking_id, liked_id)
@@ -48,7 +31,17 @@ func (r *RatingsPostgres) AddLike(likingId, likedId uint64) (uint64, error) {
 
 func (r *RatingsPostgres) GetAllLikes(userId uint64) ([]uint64, error) {
 	var ids []uint64
-	query := "SELECT liking_id FROM likes WHERE liked_id=$1"
+	query := `
+	SELECT liking_id 
+	FROM likes 
+	WHERE liked_id=$1 
+		AND liking_id NOT IN (
+			SELECT disliked_id 
+			FROM dislikes 
+			WHERE disliking_id=$1
+		)
+	`
+
 	rows, err := r.db.Query(query, userId)
 	if err != nil {
 		return nil, err
@@ -72,22 +65,6 @@ func (r *RatingsPostgres) GetAllLikes(userId uint64) ([]uint64, error) {
 
 func (r *RatingsPostgres) AddDislike(dislikingId, dislikedId uint64) (uint64, error) {
 	var id uint64
-
-	if dislikingId == dislikedId {
-		return 0, storage_errors.SelfRating
-	}
-
-	likeRes, err := r.CheckLikeExistance(dislikingId, dislikedId)
-	if err != nil {
-		return 0, err
-	}
-	dislikeRes, err := r.CheckDislikeExistance(dislikingId, dislikedId)
-	if err != nil {
-		return 0, err
-	}
-	if likeRes || dislikeRes {
-		return 0, storage_errors.AlreadyRated
-	}
 
 	query := "INSERT INTO dislikes (disliking_id, disliked_id) values ($1, $2) RETURNING dislike_id"
 	row := r.db.QueryRow(query, dislikingId, dislikedId)
@@ -114,7 +91,7 @@ func (r *RatingsPostgres) AddMatch(userId1, userId2 uint64) (uint64, error) {
 func (r *RatingsPostgres) CheckLikeExistance(likingId, likedId uint64) (bool, error) {
 	var count uint
 	query := "SELECT COUNT(*) FROM likes where liking_id=$1 AND liked_id=$2"
-	if err := r.db.Get(&count, query, likingId, likedId); err != nil {
+	if err := r.db.Get(&count, query, likedId, likingId); err != nil { //swap users because i want to check if match happened
 		return false, err
 	}
 
@@ -128,7 +105,7 @@ func (r *RatingsPostgres) CheckLikeExistance(likingId, likedId uint64) (bool, er
 func (r *RatingsPostgres) CheckDislikeExistance(dislikingId, dislikedId uint64) (bool, error) {
 	var count uint
 	query := "SELECT COUNT(*) FROM likes where liking_id=$1 AND liked_id=$2"
-	if err := r.db.Get(&count, query, dislikingId, dislikedId); err != nil {
+	if err := r.db.Get(&count, query, dislikedId, dislikingId); err != nil {
 		return false, err
 	}
 

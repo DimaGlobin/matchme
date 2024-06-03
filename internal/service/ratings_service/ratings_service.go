@@ -3,6 +3,7 @@ package ratings_service
 import (
 	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/DimaGlobin/matchme/internal/storage/ratings_storage"
+	"github.com/DimaGlobin/matchme/internal/storage/storage_errors"
 	"github.com/DimaGlobin/matchme/internal/storage/users_storage"
 )
 
@@ -28,6 +29,22 @@ func (r *RatingsService) RecommendUser(userId uint64) (*model.User, error) {
 }
 
 func (r *RatingsService) AddReaction(reaction string, subjectId, objectId uint64) (uint64, uint64, error) {
+	if subjectId == objectId {
+		return 0, 0, storage_errors.SelfRating
+	}
+
+	likeRes, err := r.ratingsStorage.CheckLikeExistance(subjectId, objectId)
+	if err != nil {
+		return 0, 0, err
+	}
+	dislikeRes, err := r.ratingsStorage.CheckDislikeExistance(subjectId, objectId)
+	if err != nil {
+		return 0, 0, err
+	}
+	if likeRes || dislikeRes {
+		return 0, 0, storage_errors.AlreadyRated
+	}
+
 	if reaction == like {
 		id, err := r.ratingsStorage.AddLike(subjectId, objectId)
 		if err != nil {
@@ -69,4 +86,36 @@ func (r *RatingsService) GetAllLikes(userId uint64) ([]uint64, error) {
 	}
 
 	return likes, nil
+}
+
+func (r *RatingsService) AddLike(subjectId, objectId uint64) (uint64, uint64, error) {
+	id, err := r.ratingsStorage.AddLike(subjectId, objectId)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	exist, err := r.ratingsStorage.CheckLikeExistance(subjectId, objectId)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if !exist {
+		return id, 0, nil
+	}
+
+	matchId, err := r.ratingsStorage.AddMatch(subjectId, objectId)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return id, matchId, nil
+}
+
+func (r *RatingsService) AddDislike(subjectId, objectId uint64) (uint64, error) {
+	id, err := r.ratingsStorage.AddDislike(subjectId, objectId)
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }

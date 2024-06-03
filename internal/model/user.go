@@ -43,3 +43,8 @@ type UserInfo struct {
 	Description string `json:"description" db:"description"`
 	MaxAge      int    `json:"max_age" binding:"required" db:"max_age"`
 }
+
+type SignInBody struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}

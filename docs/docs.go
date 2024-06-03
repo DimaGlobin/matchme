@@ -15,6 +15,44 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/action/dislike/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "react to user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Reaction",
+                "operationId": "dislike",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Dislike"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/api/action/like/": {
             "get": {
                 "security": [
@@ -47,6 +85,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/action/like/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "react to user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Reaction",
+                "operationId": "like",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Like"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/api/action/rate/": {
             "get": {
                 "security": [
@@ -72,44 +148,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.UserRecommendation"
                         }
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/api/action/{like/dislike}}/{id}": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "react to user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "api"
-                ],
-                "summary": "Reaction",
-                "operationId": "react",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Reaction"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
                     },
                     "500": {
                         "description": "Internal Server Error"
@@ -255,7 +293,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/photos/{id}": {
+        "/api/photos/{filename}": {
             "delete": {
                 "security": [
                     {
@@ -458,22 +496,28 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users_handler.SignInBody"
+                            "$ref": "#/definitions/model.SignInBody"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "token",
+                        "description": "TokenResponse",
                         "schema": {
-                            "$ref": "#/definitions/users_handler.tokenResp"
+                            "$ref": "#/definitions/api.TokenResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "ErrResponse",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrResponse"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "ErrResponse",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrResponse"
+                        }
                     }
                 }
             }
@@ -505,22 +549,58 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "idResponse",
+                        "description": "IdResponse",
                         "schema": {
-                            "$ref": "#/definitions/users_handler.idResponse"
+                            "$ref": "#/definitions/api.IdResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "ErrResponse",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrResponse"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "ErrResponse",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrResponse"
+                        }
                     }
                 }
             }
         }
     },
     "definitions": {
+        "api.ErrResponse": {
+            "type": "object",
+            "properties": {
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.IdResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "files_handlers.PhotoIdResponse": {
             "type": "object",
             "properties": {
@@ -529,7 +609,18 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Reaction": {
+        "model.Dislike": {
+            "type": "object",
+            "properties": {
+                "reaction_id": {
+                    "type": "integer"
+                },
+                "reaction_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Like": {
             "type": "object",
             "properties": {
                 "match_id": {
@@ -539,6 +630,21 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "reaction_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SignInBody": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 }
             }
@@ -674,37 +780,6 @@ const docTemplate = `{
                         3,
                         4
                     ]
-                }
-            }
-        },
-        "users_handler.SignInBody": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "users_handler.idResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "users_handler.tokenResp": {
-            "type": "object",
-            "properties": {
-                "token": {
-                    "type": "string"
                 }
             }
         }

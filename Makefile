@@ -20,7 +20,16 @@ run-docker:
 run:
 	docker compose up --build app
 
+swag:
+	swag init -g ./cmd/matchme/main.go
+
 clean:
 	docker-compose down -v --rmi local
 
-.PHONY: postgresinit, postgresrm, run-local, migrate-db-up, migrate-db-down, run-docker, create-network, run, clean
+test:
+	docker compose -f ./tests/test_env/docker-compose.test.yml up --build -d app
+	sleep 10
+	./tests/gonkey -debug -host http://localhost:8084 -tests ./tests/cases
+	docker-compose -f tests/test_env/docker-compose.test.yml down -v --rmi local
+
+.PHONY: postgresinit, postgresrm, run-local, migrate-db-up, migrate-db-down, run-docker, create-network, run, clean, test, swag
