@@ -9,7 +9,7 @@ services:
     build:
       context: ../../
       dockerfile: ./tests/test_env/Dockerfile
-    command: ./wait-for-postgres.sh db ./main
+    command: ./wait-for-postgres.sh db go test -v ./tests/...
     ports:
       - 8084:8084
     depends_on:

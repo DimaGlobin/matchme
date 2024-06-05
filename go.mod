@@ -1,6 +1,8 @@
 module github.com/DimaGlobin/matchme
 
-go 1.19
+go 1.21
+
+toolchain go1.22.4
 
 require (
 	github.com/fatih/color v1.16.0
@@ -10,10 +12,10 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.5.1
+	github.com/lamoda/gonkey v1.21.4
 	github.com/lib/pq v1.10.9
 	github.com/minio/minio-go/v7 v7.0.69
 	github.com/redis/go-redis/v9 v9.5.1
-	github.com/swaggo/http-swagger/example/go-chi v0.0.0-20230830153024-537f045bded0
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.3
 	golang.org/x/crypto v0.22.0
@@ -51,7 +53,6 @@ require (
 	github.com/klauspost/compress v1.17.6 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
-	github.com/lamoda/gonkey v1.21.4 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

@@ -17,6 +17,12 @@ RUN apt-get install -y migrate
 RUN chmod +x ./wait-for-postgres.sh
 
 RUN go mod download
+
+# Установка зависимости для тестов, если есть (например, тестовые библиотеки)
+RUN go get -t ./...
+
+# Сборка основного приложения
 RUN go build -o main cmd/matchme/main.go
 
-CMD ["./main"]
+# Команда по умолчанию для выполнения тестов
+CMD ["go", "test", "-v","./tests/..."]

@@ -45,7 +45,9 @@ func (s *SignUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, user)
 	if err != nil {
 		log.Error(api.DecodeError, sl.Err(err))
-		api.Respond(w, r, http.StatusBadRequest, api.DecodeError)
+		api.Respond(w, r, http.StatusBadRequest, api.ErrResponse{
+			Err: api.DecodeError,
+		})
 
 		return
 	}

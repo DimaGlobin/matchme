@@ -67,3 +67,26 @@
       {
         "err": "User with such phone number already exists"
       }
+
+- name: WHEN sign up didn't succeed - invalid request body
+  method: POST
+  path: /auth/sign_up
+
+  request: |
+    {
+      "email": 1,
+      "phone_number": "7888",
+      "name": "Masha",
+      "password": "123",
+      "age": 18,
+      "birth_date": "2024-02-24T08:00:00Z",
+      "city": "Moscow",
+      "max_age": 21,
+      "sex": "male"
+    }
+
+  response:
+    400: |
+      {
+        "err": "Unable to decode request body"
+      }
