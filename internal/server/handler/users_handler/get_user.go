@@ -40,7 +40,7 @@ func (s *GetUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
-	id := r.Context().Value(auth.UserCtx).(uint64)
+	id := r.Context().Value(auth.UserIdKey).(uint64)
 
 	user, err := s.service.UsersServiceInt.GetuserById(id)
 	if err != nil {

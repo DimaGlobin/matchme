@@ -8,7 +8,6 @@ import (
 	"github.com/DimaGlobin/matchme/internal/lib/api"
 	"github.com/DimaGlobin/matchme/internal/lib/logger/sl"
 	"github.com/DimaGlobin/matchme/internal/middleware/auth"
-	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -38,7 +37,7 @@ func NewDislikeHandler(log *slog.Logger, srv *service.Service) *DislikeHandler {
 // @ID dislike
 // @Accept  json
 // @Produce  json
-// @Success 200 {object} model.Dislike
+// @Success 200 {object} model.DislikeResp
 // @Failure 400,401
 // @Failure 500
 // @Router /api/action/dislike/{id} [post]
@@ -57,9 +56,9 @@ func (d *DislikeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	subjectId := r.Context().Value(auth.UserCtx).(uint64)
+	subjectId := r.Context().Value(auth.UserIdKey).(uint64)
 
-	reactionId, err := d.service.RatingsServiceInt.AddDislike(subjectId, objectId)
+	dislikeResp, err := d.service.RatingsServiceInt.AddDislike(subjectId, objectId)
 	if err != nil {
 		msg := err.Error()
 		log.Error(msg, sl.Err(err))
@@ -68,9 +67,6 @@ func (d *DislikeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info(fmt.Sprintf("Disliked successfully, dislikeId: %d", reactionId))
-	api.Respond(w, r, http.StatusOK, model.Dislike{
-		ReactionType: dislike,
-		ReactionId:   reactionId,
-	})
+	log.Info(fmt.Sprintf("Disliked successfully, dislikeId: %d", dislikeResp.ReactionId))
+	api.Respond(w, r, http.StatusOK, dislikeResp)
 }

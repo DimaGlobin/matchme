@@ -24,15 +24,17 @@ definitions:
       id:
         type: integer
     type: object
-  model.Dislike:
+  model.DislikeResp:
     properties:
       reaction_id:
         type: integer
       reaction_type:
         type: string
     type: object
-  model.Like:
+  model.LikeResp:
     properties:
+      likes_left:
+        type: integer
       match_id:
         type: integer
       reaction_id:
@@ -162,7 +164,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Dislike'
+            $ref: '#/definitions/model.DislikeResp'
         "400":
           description: Bad Request
         "401":
@@ -206,7 +208,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Like'
+            $ref: '#/definitions/model.LikeResp'
         "400":
           description: Bad Request
         "401":

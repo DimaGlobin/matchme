@@ -5,6 +5,7 @@ import (
 
 	"github.com/DimaGlobin/matchme/internal/lib/api"
 	"github.com/DimaGlobin/matchme/internal/lib/logger/sl"
+	"github.com/DimaGlobin/matchme/internal/mm_errors"
 	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/go-chi/chi/v5/middleware"
@@ -43,9 +44,18 @@ func (s *SigninHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	err := render.DecodeJSON(r.Body, body)
 	if err != nil {
-		log.Error(api.DecodeError, sl.Err(err))
+		log.Error(mm_errors.DecodeError.Error(), sl.Err(err))
 		api.Respond(w, r, http.StatusBadRequest, api.ErrResponse{
-			Err: api.DecodeError,
+			Err: mm_errors.DecodeError.Error(),
+		})
+
+		return
+	}
+
+	if err = body.Valid(); err != nil {
+		log.Error(err.Error(), sl.Err(err))
+		api.Respond(w, r, http.StatusBadRequest, api.ErrResponse{
+			Err: err.Error(),
 		})
 
 		return
@@ -53,9 +63,9 @@ func (s *SigninHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	token, err := s.service.UsersServiceInt.GenerateToken(body.Email, body.Password)
 	if err != nil {
-		log.Error(api.JwtCreationError, sl.Err(err))
+		log.Error(mm_errors.JwtCreationError.Error(), sl.Err(err))
 		api.Respond(w, r, http.StatusInternalServerError, api.ErrResponse{
-			Err: api.JwtCreationError,
+			Err: mm_errors.DecodeError.Error(),
 		})
 
 		return

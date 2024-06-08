@@ -38,7 +38,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Dislike"
+                            "$ref": "#/definitions/model.DislikeResp"
                         }
                     },
                     "400": {
@@ -108,7 +108,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Like"
+                            "$ref": "#/definitions/model.LikeResp"
                         }
                     },
                     "400": {
@@ -609,7 +609,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Dislike": {
+        "model.DislikeResp": {
             "type": "object",
             "properties": {
                 "reaction_id": {
@@ -620,9 +620,12 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Like": {
+        "model.LikeResp": {
             "type": "object",
             "properties": {
+                "likes_left": {
+                    "type": "integer"
+                },
                 "match_id": {
                     "type": "integer"
                 },

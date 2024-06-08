@@ -52,7 +52,7 @@ func (g *GetFileByIdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId := r.Context().Value(auth.UserCtx).(uint64)
+	userId := r.Context().Value(auth.UserIdKey).(uint64)
 
 	file, err := g.service.FilesServiceInt.GetFileById(fileId, userId)
 	if err != nil {

@@ -38,7 +38,7 @@ func (g *GetFilesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
-	userId := r.Context().Value(auth.UserCtx).(uint64)
+	userId := r.Context().Value(auth.UserIdKey).(uint64)
 
 	writer := multipart.NewWriter(w)
 	w.Header().Set("Content-Type", writer.FormDataContentType())

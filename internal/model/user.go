@@ -3,7 +3,13 @@ package model
 import (
 	"time"
 
+	"github.com/DimaGlobin/matchme/internal/mm_errors"
 	_ "gorm.io/driver/postgres"
+)
+
+const (
+	male   = "male"
+	female = "female"
 )
 
 type User struct {
@@ -49,6 +55,46 @@ type SignInBody struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func (u *User) Valid() {
-	
+func (u *User) Valid() error {
+	if u.Age < 18 {
+		return mm_errors.NewMmError("Invalid age")
+	}
+
+	if u.Email == "" {
+		return mm_errors.NewMmError("Empty email")
+	}
+
+	if u.PhoneNumber == "" {
+		return mm_errors.NewMmError("Empty phone number")
+	}
+
+	if u.BirthDate.After(time.Now().AddDate(-18, 0, 0)) {
+		return mm_errors.NewMmError("Invalid birth date")
+	}
+
+	if u.MaxAge < 18 {
+		return mm_errors.NewMmError("Invalid maximum age")
+	}
+
+	if u.Sex != male && u.Sex != female {
+		return mm_errors.NewMmError("invalid sex")
+	}
+
+	if u.Name == "" {
+		return mm_errors.NewMmError("Empty name")
+	}
+
+	return nil
+}
+
+func (s *SignInBody) Valid() error {
+	if s.Email == "" {
+		return mm_errors.NewMmError("Empty email")
+	}
+
+	if s.Password == "" {
+		return mm_errors.NewMmError("Empty password")
+	}
+
+	return nil
 }

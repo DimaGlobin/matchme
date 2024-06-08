@@ -8,14 +8,10 @@ func (r RatingsError) Error() string {
 	return string(r)
 }
 
-const (
-	unsupReaction RatingsError = "Unsuported reaction"
-)
-
 type RatingsServiceInt interface {
 	RecommendUser(userId uint64) (*model.User, error)
-	AddLike(subjectId, objectId uint64) (uint64, uint64, error)
-	AddDislike(subjectId, objectId uint64) (uint64, error)
+	AddLike(subjectId, objectId uint64, subjectRole string) (*model.LikeResp, error)
+	AddDislike(subjectId, objectId uint64) (*model.DislikeResp, error)
 	GetAllLikes(userId uint64) ([]uint64, error)
 }
 

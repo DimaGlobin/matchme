@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	UserCtx = "userId"
+	UserIdKey   = "userId"
+	UserRoleKey = "userRole"
 )
 
 func New(log *slog.Logger, srv *service.Service) func(next http.Handler) http.Handler {
@@ -46,7 +47,7 @@ func New(log *slog.Logger, srv *service.Service) func(next http.Handler) http.Ha
 				return
 			}
 
-			userId, err := srv.UsersServiceInt.ParseToken(headerParts[1])
+			claims, err := srv.UsersServiceInt.ParseToken(headerParts[1])
 			if err != nil {
 				msg := "Cannot parse token"
 				api.Respond(w, r, http.StatusUnauthorized, msg)
@@ -54,7 +55,10 @@ func New(log *slog.Logger, srv *service.Service) func(next http.Handler) http.Ha
 				return
 			}
 
-			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), UserCtx, userId)))
+			ctx := context.WithValue(r.Context(), UserIdKey, claims.UserId)
+			ctx = context.WithValue(r.Context(), UserRoleKey, claims.UserRole)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
 		}
 
 		return http.HandlerFunc(fn)

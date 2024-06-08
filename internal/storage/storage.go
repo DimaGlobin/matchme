@@ -20,7 +20,7 @@ type Storage struct {
 
 func NewStorage(db *sqlx.DB, minioClient *files_storage.MinioClient, rdb *redis.Client) *Storage {
 	return &Storage{
-		UsersStorage:     users_storage.NewUsersPostgres(cache_storage.NewCacheRedis(rdb), db),
+		UsersStorage:     users_storage.NewUsersPostgres(db),
 		FilesStorage:     files_storage.NewFilesMinio(minioClient),
 		FilesDataStorage: files_data_storage.NewFilesPostgres(db),
 		RatingsStorage:   ratings_storage.NewRatingsPostgres(db),

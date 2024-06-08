@@ -5,6 +5,7 @@ import (
 
 	"github.com/DimaGlobin/matchme/internal/lib/api"
 	"github.com/DimaGlobin/matchme/internal/lib/logger/sl"
+	"github.com/DimaGlobin/matchme/internal/mm_errors"
 	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/go-chi/chi/v5/middleware"
@@ -44,9 +45,18 @@ func (s *SignUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	err := render.DecodeJSON(r.Body, user)
 	if err != nil {
-		log.Error(api.DecodeError, sl.Err(err))
+		log.Error(mm_errors.DecodeError.Error(), sl.Err(err))
 		api.Respond(w, r, http.StatusBadRequest, api.ErrResponse{
-			Err: api.DecodeError,
+			Err: mm_errors.DecodeError.Error(),
+		})
+
+		return
+	}
+
+	if err = user.Valid(); err != nil {
+		log.Error(err.Error(), sl.Err(err))
+		api.Respond(w, r, http.StatusBadRequest, api.ErrResponse{
+			Err: err.Error(),
 		})
 
 		return

@@ -51,7 +51,7 @@ func (g *GetFileByNameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	// filename := chi.URLParam(r, "filename")
 	fmt.Println(filename)
 
-	userId := r.Context().Value(auth.UserCtx).(uint64)
+	userId := r.Context().Value(auth.UserIdKey).(uint64)
 
 	file, err := g.service.FilesServiceInt.GetFileByName(userId, filename)
 	if err != nil {

@@ -1,82 +1,38 @@
 package ratings_service
 
 import (
+	"github.com/DimaGlobin/matchme/internal/mm_errors"
 	"github.com/DimaGlobin/matchme/internal/model"
+	"github.com/DimaGlobin/matchme/internal/storage/cache_storage"
 	"github.com/DimaGlobin/matchme/internal/storage/ratings_storage"
-	"github.com/DimaGlobin/matchme/internal/storage/storage_errors"
 	"github.com/DimaGlobin/matchme/internal/storage/users_storage"
 )
 
 const (
 	like    = "like"
 	dislike = "dislike"
+
+	basicRole   = "basic"
+	adminRole   = "admin"
+	premiumRole = "premium"
 )
 
 type RatingsService struct {
 	ratingsStorage ratings_storage.RatingsStorage
 	usersStorage   users_storage.UsersStorage
+	cacheStorage   cache_storage.CacheStorage
 }
 
-func NewRatingsService(ratingsStorage ratings_storage.RatingsStorage, usersStorage users_storage.UsersStorage) *RatingsService {
+func NewRatingsService(ratingsStorage ratings_storage.RatingsStorage, usersStorage users_storage.UsersStorage, cacheStorage cache_storage.CacheStorage) *RatingsService {
 	return &RatingsService{
 		ratingsStorage: ratingsStorage,
 		usersStorage:   usersStorage,
+		cacheStorage:   cacheStorage,
 	}
 }
 
 func (r *RatingsService) RecommendUser(userId uint64) (*model.User, error) {
 	return r.usersStorage.GetRandomUser(userId)
-}
-
-func (r *RatingsService) AddReaction(reaction string, subjectId, objectId uint64) (uint64, uint64, error) {
-	if subjectId == objectId {
-		return 0, 0, storage_errors.SelfRating
-	}
-
-	likeRes, err := r.ratingsStorage.CheckLikeExistance(subjectId, objectId)
-	if err != nil {
-		return 0, 0, err
-	}
-	dislikeRes, err := r.ratingsStorage.CheckDislikeExistance(subjectId, objectId)
-	if err != nil {
-		return 0, 0, err
-	}
-	if likeRes || dislikeRes {
-		return 0, 0, storage_errors.AlreadyRated
-	}
-
-	if reaction == like {
-		id, err := r.ratingsStorage.AddLike(subjectId, objectId)
-		if err != nil {
-			return 0, 0, err
-		}
-
-		exist, err := r.ratingsStorage.CheckLikeExistance(subjectId, objectId)
-		if err != nil {
-			return 0, 0, err
-		}
-
-		if !exist {
-			return id, 0, nil
-		}
-
-		matchId, err := r.ratingsStorage.AddMatch(subjectId, objectId)
-		if err != nil {
-			return 0, 0, err
-		}
-
-		return id, matchId, nil
-
-	} else if reaction == dislike {
-		id, err := r.ratingsStorage.AddDislike(subjectId, objectId)
-		if err != nil {
-			return 0, 0, err
-		}
-
-		return id, 0, nil
-	}
-
-	return 0, 0, unsupReaction
 }
 
 func (r *RatingsService) GetAllLikes(userId uint64) ([]uint64, error) {
@@ -88,34 +44,62 @@ func (r *RatingsService) GetAllLikes(userId uint64) ([]uint64, error) {
 	return likes, nil
 }
 
-func (r *RatingsService) AddLike(subjectId, objectId uint64) (uint64, uint64, error) {
+func (r *RatingsService) AddLike(subjectId, objectId uint64, subjectRole string) (*model.LikeResp, error) {
 	id, err := r.ratingsStorage.AddLike(subjectId, objectId)
 	if err != nil {
-		return 0, 0, err
+		return nil, err
+	}
+
+	var likesLeft *int
+
+	if subjectRole == "basic" {
+		likesResp, err := r.cacheStorage.DecLikesCount(subjectId)
+		likesLeft = &likesResp
+
+		if err != nil {
+			return nil, err
+		}
+
+		if likesResp <= 0 {
+			return nil, mm_errors.LikesExpired
+		}
 	}
 
 	exist, err := r.ratingsStorage.CheckLikeExistance(subjectId, objectId)
 	if err != nil {
-		return 0, 0, err
+		return nil, err
 	}
 
 	if !exist {
-		return id, 0, nil
+		return &model.LikeResp{
+			ReactionType: like,
+			ReactionId:   id,
+			MatchId:      0,
+			LikesLeft:    likesLeft,
+		}, err
 	}
 
 	matchId, err := r.ratingsStorage.AddMatch(subjectId, objectId)
 	if err != nil {
-		return 0, 0, err
+		return nil, err
 	}
 
-	return id, matchId, nil
+	return &model.LikeResp{
+		ReactionType: like,
+		ReactionId:   id,
+		MatchId:      matchId,
+		LikesLeft:    likesLeft,
+	}, nil
 }
 
-func (r *RatingsService) AddDislike(subjectId, objectId uint64) (uint64, error) {
+func (r *RatingsService) AddDislike(subjectId, objectId uint64) (*model.DislikeResp, error) {
 	id, err := r.ratingsStorage.AddDislike(subjectId, objectId)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return id, nil
+	return &model.DislikeResp{
+		ReactionType: dislike,
+		ReactionId:   id,
+	}, err
 }

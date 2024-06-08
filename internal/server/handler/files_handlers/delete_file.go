@@ -38,7 +38,7 @@ func (d *DeleteFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
-	userId := r.Context().Value(auth.UserCtx).(uint64)
+	userId := r.Context().Value(auth.UserIdKey).(uint64)
 
 	parts := strings.Split(r.URL.Path, "/") // I understand that it's not the best solution but
 	filename := parts[len(parts)-1]         // I'm tired of searching how to do it using built in

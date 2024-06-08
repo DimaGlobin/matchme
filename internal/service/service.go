@@ -17,6 +17,6 @@ func NewService(storage storage.Storage) *Service {
 	return &Service{
 		UsersServiceInt:   users_service.NewUsersService(storage.UsersStorage),
 		FilesServiceInt:   files_service.NewFilesService(storage.FilesStorage, storage.FilesDataStorage),
-		RatingsServiceInt: ratings_service.NewRatingsService(storage.RatingsStorage, storage.UsersStorage),
+		RatingsServiceInt: ratings_service.NewRatingsService(storage.RatingsStorage, storage.UsersStorage, storage.CacheStorage),
 	}
 }
