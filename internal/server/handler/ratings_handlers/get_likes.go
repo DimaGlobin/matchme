@@ -42,7 +42,7 @@ func (g *GetLikesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
-	userId := r.Context().Value(auth.UserCtx).(uint64)
+	userId := r.Context().Value(auth.UserIdKey).(uint64)
 
 	likes, err := g.service.RatingsServiceInt.GetAllLikes(userId)
 	if err != nil {

@@ -7,7 +7,7 @@ import (
 type UsersServiceInt interface {
 	CreateUser(user *model.User) (uint64, error)
 	GenerateToken(login, password string) (string, error)
-	ParseToken(token string) (uint64, error)
+	ParseToken(accessToken string) (*tokenClaims, error)
 	GetuserById(id uint64) (*model.User, error)
 	UpdateUser(id uint64, updates model.Updates) error
 	DeleteUser(id uint64) error

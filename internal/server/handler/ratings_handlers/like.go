@@ -4,25 +4,23 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/DimaGlobin/matchme/internal/lib/api"
 	"github.com/DimaGlobin/matchme/internal/lib/logger/sl"
 	"github.com/DimaGlobin/matchme/internal/middleware/auth"
-	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/exp/slog"
 )
 
-type ReactionHandler struct {
+type LikeHandler struct {
 	logger  *slog.Logger
 	service *service.Service
 }
 
-func NewReactionHandler(log *slog.Logger, srv *service.Service) *ReactionHandler {
-	return &ReactionHandler{
+func NewLikeHandler(log *slog.Logger, srv *service.Service) *LikeHandler {
+	return &LikeHandler{
 		logger:  log,
 		service: srv,
 	}
@@ -32,20 +30,17 @@ func NewReactionHandler(log *slog.Logger, srv *service.Service) *ReactionHandler
 // @Security BearerAuth
 // @Tags api
 // @Description react to user
-// @ID react
+// @ID like
 // @Accept  json
 // @Produce  json
-// @Success 200 {object} model.Reaction
+// @Success 200 {object} model.LikeResp
 // @Failure 400,401
 // @Failure 500
-// @Router /api/action/{like/dislike}}/{id} [post]
-func (rh *ReactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log := rh.logger.With(
+// @Router /api/action/like/{id} [post]
+func (l *LikeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log := l.logger.With(
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
-
-	parts := strings.Split(r.URL.Path, "/")
-	reaction := parts[len(parts)-2]
 
 	objectIdStr := chi.URLParam(r, "id")
 	objectId, err := strconv.ParseUint(objectIdStr, 10, 64)
@@ -57,9 +52,10 @@ func (rh *ReactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	subjectId := r.Context().Value(auth.UserCtx).(uint64)
+	subjectId := r.Context().Value(auth.UserIdKey).(uint64)
+	subjectRole := r.Context().Value(auth.UserRoleKey).(string)
 
-	reactionId, matchId, err := rh.service.RatingsServiceInt.AddReaction(reaction, subjectId, objectId)
+	likeResp, err := l.service.RatingsServiceInt.AddLike(subjectId, objectId, subjectRole)
 	if err != nil {
 		msg := err.Error()
 		log.Error(msg, sl.Err(err))
@@ -68,10 +64,6 @@ func (rh *ReactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info(fmt.Sprintf("Reacted %s successfully, reactionId: %d", reaction, reactionId))
-	api.Respond(w, r, http.StatusOK, model.Reaction{
-		ReactionType: reaction,
-		ReactionId:   reactionId,
-		MatchId:      matchId,
-	})
+	log.Info(fmt.Sprintf("Reacted %s successfully, reactionId: %d", likeResp.ReactionType, likeResp.ReactionId))
+	api.Respond(w, r, http.StatusOK, likeResp)
 }

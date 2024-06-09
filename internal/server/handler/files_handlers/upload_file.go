@@ -65,7 +65,7 @@ func (u *UploadFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fileData := new(model.FileData)
 	fileData.FileName = header.Filename
 	fileData.Size = header.Size
-	fileData.UserId = r.Context().Value(auth.UserCtx).(uint64)
+	fileData.UserId = r.Context().Value(auth.UserIdKey).(uint64)
 
 	if fileData.Size > 3*1024*1024 {
 		msg := "File size shiuld be less than 3 MB"

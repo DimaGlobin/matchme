@@ -1,11 +1,12 @@
 package users_service
 
 import (
-	"errors"
 	"os"
 	"time"
 
+	"github.com/DimaGlobin/matchme/internal/mm_errors"
 	"github.com/DimaGlobin/matchme/internal/model"
+	"github.com/DimaGlobin/matchme/internal/storage/cache_storage"
 	"github.com/DimaGlobin/matchme/internal/storage/users_storage"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -17,6 +18,7 @@ const (
 
 type UsersService struct {
 	usersStorage users_storage.UsersStorage
+	cacheStorage cache_storage.CacheStorage
 }
 
 type tokenClaims struct {
@@ -64,27 +66,42 @@ func (u *UsersService) GenerateToken(email string, password string) (string, err
 	return token.SignedString([]byte(os.Getenv("SECRET")))
 }
 
-func (u *UsersService) ParseToken(accessToken string) (uint64, error) {
+func (u *UsersService) ParseToken(accessToken string) (*tokenClaims, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid signing method")
+			return nil, mm_errors.InvalidSigning
 		}
 
 		return []byte(os.Getenv("SECRET")), nil
 	})
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	claims, ok := token.Claims.(*tokenClaims)
 	if !ok {
-		return 0, errors.New("token claims are not of type *tokenClaims")
+		return nil, mm_errors.InvalidTokenType
 	}
 
-	return claims.UserId, nil
+	return claims, nil
 }
 
 func (u *UsersService) GetuserById(id uint64) (*model.User, error) {
+	user, err := u.cacheStorage.GetUserFromCache(id)
+	if err == cache_storage.NoValueInCache {
+		user, err = u.usersStorage.GetUserById(id)
+		if err != nil {
+			return nil, err
+		}
+		if err = u.cacheStorage.AddUserToCache(user); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else if err != nil {
+		return nil, err
+	}
+
 	return u.usersStorage.GetUserById(id)
 }
 

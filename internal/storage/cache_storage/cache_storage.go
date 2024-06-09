@@ -10,6 +10,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+const maxLikesPerDay = 50
+
 type CacheRedis struct {
 	rdb *redis.Client
 }
@@ -52,4 +54,35 @@ func (c *CacheRedis) GetUserFromCache(userId uint64) (*model.User, error) {
 	}
 
 	return user, nil
+}
+
+func (c *CacheRedis) DecLikesCount(userId uint64) (int, error) {
+	key := fmt.Sprintf("users_likes:%d", userId)
+	ctx := context.TODO()
+
+	likesLeft, err := c.rdb.Get(ctx, key).Int()
+	if err == redis.Nil {
+		likesLeft = maxLikesPerDay
+		err = c.rdb.Set(ctx, key, likesLeft, time.Until(endOfDay())).Err()
+		if err != nil {
+			return 0, CannotAddToCache
+		}
+	} else if err != nil {
+		return 0, err
+	}
+
+	if likesLeft > 0 {
+		err = c.rdb.Decr(ctx, key).Err()
+		if err != nil {
+			return 0, DecrementError
+		}
+		return likesLeft - 1, nil
+	}
+
+	return 0, nil
+}
+
+func endOfDay() time.Time {
+	now := time.Now()
+	return time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
 }

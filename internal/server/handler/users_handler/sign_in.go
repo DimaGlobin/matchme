@@ -5,6 +5,8 @@ import (
 
 	"github.com/DimaGlobin/matchme/internal/lib/api"
 	"github.com/DimaGlobin/matchme/internal/lib/logger/sl"
+	"github.com/DimaGlobin/matchme/internal/mm_errors"
+	"github.com/DimaGlobin/matchme/internal/model"
 	"github.com/DimaGlobin/matchme/internal/service"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
@@ -23,51 +25,53 @@ func NewSignInHandler(log *slog.Logger, srv *service.Service) *SigninHandler {
 	}
 }
 
-type SignInBody struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
-type tokenResp struct {
-	Token string `json:"token"`
-}
-
 // @Summary SignIn
 // @Tags auth
 // @Description login
 // @ID login
 // @Accept  json
 // @Produce  json
-// @Param input body SignInBody true "credentials"
-// @Success 200 {object} tokenResp "token"
-// @Failure 400
-// @Failure 500
+// @Param input body model.SignInBody true "credentials"
+// @Success 200 {object} api.TokenResponse "TokenResponse"
+// @Failure 400 {object} api.ErrResponse "ErrResponse"
+// @Failure 500 {object} api.ErrResponse "ErrResponse"
 // @Router /auth/sign_in [post]
 func (s *SigninHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	body := &SignInBody{}
+	body := &model.SignInBody{}
 	log := s.logger.With(
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
 	err := render.DecodeJSON(r.Body, body)
 	if err != nil {
-		msg := "Unable to decode request body"
-		log.Error(msg, sl.Err(err))
-		api.Respond(w, r, http.StatusBadRequest, msg)
+		log.Error(mm_errors.DecodeError.Error(), sl.Err(err))
+		api.Respond(w, r, http.StatusBadRequest, api.ErrResponse{
+			Err: mm_errors.DecodeError.Error(),
+		})
+
+		return
+	}
+
+	if err = body.Valid(); err != nil {
+		log.Error(err.Error(), sl.Err(err))
+		api.Respond(w, r, http.StatusBadRequest, api.ErrResponse{
+			Err: err.Error(),
+		})
 
 		return
 	}
 
 	token, err := s.service.UsersServiceInt.GenerateToken(body.Email, body.Password)
 	if err != nil {
-		msg := "Unable to create jwt token"
-		log.Error(msg, sl.Err(err))
-		api.Respond(w, r, http.StatusInternalServerError, msg)
+		log.Error(mm_errors.JwtCreationError.Error(), sl.Err(err))
+		api.Respond(w, r, http.StatusInternalServerError, api.ErrResponse{
+			Err: mm_errors.DecodeError.Error(),
+		})
 
 		return
 	}
 
-	api.Respond(w, r, http.StatusOK, tokenResp{
+	api.Respond(w, r, http.StatusOK, api.TokenResponse{
 		Token: token,
 	})
 

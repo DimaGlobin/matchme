@@ -46,7 +46,15 @@ func main() {
 		stdlog.Fatal("Cannot load .env file")
 	}
 
-	cfg := config.MustLoad("./config/server_config.yaml")
+	cfg := &config.Config{}
+
+	env := os.Getenv("ENV")
+	if env == "test" {
+		cfg = config.MustLoad("./tests/test_env/test_config.yaml")
+	} else {
+		cfg = config.MustLoad("./config/server_config.yaml")
+	}
+
 	log := logger.NewCommonLogger(cfg.Env)
 
 	db, err := storage.NewPostgresDB(cfg)

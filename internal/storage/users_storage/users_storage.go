@@ -5,20 +5,17 @@ import (
 	"strings"
 
 	"github.com/DimaGlobin/matchme/internal/model"
-	"github.com/DimaGlobin/matchme/internal/storage/cache_storage"
 	"github.com/DimaGlobin/matchme/internal/storage/storage_errors"
 	"github.com/jmoiron/sqlx"
 )
 
 type UserPostgres struct {
-	cacheStorage cache_storage.CacheStorage
-	db           *sqlx.DB
+	db *sqlx.DB
 }
 
-func NewUsersPostgres(cacheStorage cache_storage.CacheStorage, db *sqlx.DB) *UserPostgres {
+func NewUsersPostgres(db *sqlx.DB) *UserPostgres {
 	return &UserPostgres{
-		cacheStorage: cacheStorage,
-		db:           db,
+		db: db,
 	}
 }
 
@@ -81,22 +78,9 @@ func (u *UserPostgres) GetUser(email string) (*model.User, error) {
 func (u *UserPostgres) GetUserById(id uint64) (*model.User, error) {
 	user := &model.User{}
 
-	user, err := u.cacheStorage.GetUserFromCache(id)
-	if err == cache_storage.NoValueInCache {
-		user := &model.User{}
-
-		query := "SELECT * FROM users where user_id=$1"
-		if err := u.db.Get(user, query, id); err != nil {
-			return nil, storage_errors.ProcessPostgresError(err)
-		}
-
-		if err = u.cacheStorage.AddUserToCache(user); err != nil {
-			return nil, err
-		}
-
-		return user, nil
-	} else if err != nil {
-		return nil, err
+	query := "SELECT * FROM users where user_id=$1"
+	if err := u.db.Get(user, query, id); err != nil {
+		return nil, storage_errors.ProcessPostgresError(err)
 	}
 
 	return user, nil

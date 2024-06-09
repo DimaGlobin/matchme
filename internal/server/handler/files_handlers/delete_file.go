@@ -2,13 +2,12 @@ package files_handlers
 
 import (
 	"net/http"
-	"strconv"
+	"strings"
 
 	"github.com/DimaGlobin/matchme/internal/lib/api"
 	"github.com/DimaGlobin/matchme/internal/lib/logger/sl"
 	"github.com/DimaGlobin/matchme/internal/middleware/auth"
 	"github.com/DimaGlobin/matchme/internal/service"
-	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/exp/slog"
 )
@@ -33,25 +32,26 @@ func NewDeleteFileHandler(log *slog.Logger, srv *service.Service) *DeleteFileHan
 // @Success 200 {object} string "File was deleted successfully"
 // @Failure 400 {string} string "Empty file name"
 // @Failure 500 {string} string "Cannot parse url query"
-// @Router /api/photos/{id} [delete]
+// @Router /api/photos/{filename} [delete]
 func (d *DeleteFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := d.logger.With(
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
-	userId := r.Context().Value(auth.UserCtx).(uint64)
+	userId := r.Context().Value(auth.UserIdKey).(uint64)
 
-	fileIdStr := chi.URLParam(r, "id")
-	fileId, err := strconv.ParseUint(fileIdStr, 10, 64)
-	if err != nil {
-		msg := "Cannot parse url query"
-		log.Error(msg, sl.Err(err))
-		api.Respond(w, r, http.StatusBadRequest, "")
-
+	parts := strings.Split(r.URL.Path, "/") // I understand that it's not the best solution but
+	filename := parts[len(parts)-1]         // I'm tired of searching how to do it using built in
+	// chi tools :( yours CEO
+	if filename == "" {
+		msg := "Empty file name"
+		api.Respond(w, r, http.StatusBadRequest, msg)
 		return
 	}
+	// filename := chi.URLParam(r, "filename")
+	// fmt.Println(filename)
 
-	if err := d.service.FilesServiceInt.DeleteFile(fileId, userId); err != nil {
+	if err := d.service.FilesServiceInt.DeleteFile(userId, filename); err != nil {
 		msg := "Cannot delete file"
 		log.Error(msg, sl.Err(err))
 		api.Respond(w, r, http.StatusInternalServerError, msg)
