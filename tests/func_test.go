@@ -57,7 +57,7 @@ func Setup() *httptest.Server {
 	service := service.NewService(*storage)
 
 	log.Info(
-		"starting url-shortener",
+		"starting matchme",
 		slog.String("env", cfg.Env),
 		slog.String("version", "123"),
 	)
