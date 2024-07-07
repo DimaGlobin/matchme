@@ -1,7 +1,6 @@
 package users_handler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -43,8 +42,6 @@ func (s *GetUserByIdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 
 	idStr := chi.URLParam(r, "id") // Refactore in future( business logic in habdlers layer )
-
-	fmt.Println("idStr: ", idStr)
 
 	var id uint64
 	var err error

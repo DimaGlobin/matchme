@@ -2,3 +2,4 @@
 ./.database/*
 data/*
 allure-results/*
+.idea/*

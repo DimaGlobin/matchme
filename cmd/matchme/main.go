@@ -87,8 +87,12 @@ func main() {
 		return
 	}
 
+	fmt.Printf("rdb: %p\n", rdb)
+
 	storage := storage.NewStorage(db, minioClient, rdb)
+	fmt.Println("storage: ", *storage)
 	service := service.NewService(*storage)
+	fmt.Println("service: ", service)
 
 	log.Info(
 		"starting matchme",

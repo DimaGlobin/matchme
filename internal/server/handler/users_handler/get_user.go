@@ -42,6 +42,8 @@ func (s *GetUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	id := r.Context().Value(auth.UserIdKey).(uint64)
 
+	// fmt.Println("ID: ", id)
+
 	user, err := s.service.UsersServiceInt.GetuserById(id)
 	if err != nil {
 		msg := "Unable to get user"

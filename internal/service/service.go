@@ -15,7 +15,7 @@ type Service struct {
 
 func NewService(storage storage.Storage) *Service {
 	return &Service{
-		UsersServiceInt:   users_service.NewUsersService(storage.UsersStorage),
+		UsersServiceInt:   users_service.NewUsersService(storage.UsersStorage, storage.CacheStorage),
 		FilesServiceInt:   files_service.NewFilesService(storage.FilesStorage, storage.FilesDataStorage),
 		RatingsServiceInt: ratings_service.NewRatingsService(storage.RatingsStorage, storage.UsersStorage, storage.CacheStorage),
 	}

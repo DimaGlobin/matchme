@@ -5,6 +5,7 @@ import (
 
 	"github.com/DimaGlobin/matchme/internal/mm_errors"
 	_ "gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 const (
@@ -13,41 +14,48 @@ const (
 )
 
 type User struct {
-	Id           uint64    `json:"-" db:"user_id"`
-	Email        string    `json:"email" binding:"required" db:"email"`
-	PhoneNumber  string    `json:"phone_number" binding:"required" db:"phone_number"`
-	Name         string    `json:"name" binding:"required" db:"name"`
-	Password     string    `json:"password" binding:"required" db:"password_hash"`
-	Sex          string    `json:"sex" db:"sex"`
-	Age          int       `json:"age" binding:"required" db:"age"`
-	BirthDate    time.Time `json:"birth_date" binding:"required" db:"birth_date"`
-	City         string    `json:"city" binding:"required" db:"city"`
-	Description  string    `json:"description" db:"description"`
-	Role         string    `json:"-" db:"role"`
-	MaxAge       int       `json:"max_age" binding:"required" db:"max_age"`
-	CreationDate time.Time `json:"-" db:"creation_date"`
-	// Radius      int       `db:"radius"`
-	// LastIP      string    `db:"last_ip"`
-	// Latitude    float64   `db:"latitude"`
-	// Longitude   float64   `db:"longtitude"`
+	Id           uint64    `json:"-" gorm:"primaryKey;column:user_id"`
+	Email        string    `json:"email" binding:"required" gorm:"column:email"`
+	PhoneNumber  string    `json:"phone_number" binding:"required" gorm:"column:phone_number"`
+	Name         string    `json:"name" binding:"required" gorm:"column:name"`
+	Password     string    `json:"password" binding:"required" gorm:"column:password_hash"`
+	Sex          string    `json:"sex" gorm:"column:sex"`
+	Age          int       `json:"age" binding:"required" gorm:"column:age"`
+	BirthDate    time.Time `json:"birth_date" binding:"required" gorm:"column:birth_date"`
+	City         string    `json:"city" binding:"required" gorm:"column:city"`
+	Description  string    `json:"description" gorm:"column:description"`
+	Role         string    `json:"-" gorm:"column:role"`
+	MaxAge       int       `json:"max_age" binding:"required" gorm:"column:max_age"`
+	CreationDate time.Time `json:"-" gorm:"column:creation_date"`
+}
+
+func (User) TableName() string {
+	return "users"
+}
+
+func (u *User) BeforeSave(tx *gorm.DB) error {
+	if u.Role == "" {
+		u.Role = "basic"
+	}
+	return nil
 }
 
 type UserRecommendation struct {
-	Id          uint64 `json:"id" db:"user_id"`
-	Name        string `json:"name" binding:"required" db:"name"`
-	Age         int    `json:"age" binding:"required" db:"age"`
-	Description string `json:"description" db:"description"`
+	Id          uint64 `json:"id" gorm:"primaryKey;column:user_id"`
+	Name        string `json:"name" binding:"required" gorm:"column:name"`
+	Age         int    `json:"age" binding:"required" gorm:"column:age"`
+	Description string `json:"description" gorm:"column:description"`
 }
 
 type UserInfo struct {
-	Email       string `json:"email" binding:"required" db:"email"`
-	PhoneNumber string `json:"phone_number" binding:"reuqired" db:"phone_number"`
-	Name        string `json:"name" binding:"required" db:"name"`
-	Sex         string `json:"sex" db:"sex"`
-	Age         int    `json:"age" binding:"required" db:"age"`
-	City        string `json:"city" binding:"required" db:"city"`
-	Description string `json:"description" db:"description"`
-	MaxAge      int    `json:"max_age" binding:"required" db:"max_age"`
+	Email       string `json:"email" binding:"required" gorm:"column:email"`
+	PhoneNumber string `json:"phone_number" binding:"required" gorm:"column:phone_number"`
+	Name        string `json:"name" binding:"required" gorm:"column:name"`
+	Sex         string `json:"sex" gorm:"column:sex"`
+	Age         int    `json:"age" binding:"required" gorm:"column:age"`
+	City        string `json:"city" binding:"required" gorm:"column:city"`
+	Description string `json:"description" gorm:"column:description"`
+	MaxAge      int    `json:"max_age" binding:"required" gorm:"column:max_age"`
 }
 
 type SignInBody struct {

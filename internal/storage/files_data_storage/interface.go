@@ -8,7 +8,7 @@ type FilesDataStorage interface {
 	GetFileByName(userId uint64, filename string) (*model.FileData, error)
 	GetAllFiles(userId uint64) ([]*model.FileData, error)
 	DeleteFile(fileId, userId uint64) error
-	GetFilesCount(userId uint64) (int, error)
+	GetFilesCount(userId uint64) (int64, error)
 }
 
 var _ FilesDataStorage = (*FilesPostgres)(nil)
