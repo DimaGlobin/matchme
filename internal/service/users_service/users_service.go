@@ -27,9 +27,10 @@ type tokenClaims struct {
 	UserRole string `json:"user_role"`
 }
 
-func NewUsersService(usersStorage users_storage.UsersStorage) *UsersService {
+func NewUsersService(usersStorage users_storage.UsersStorage, cacheStorage cache_storage.CacheStorage) *UsersService {
 	return &UsersService{
 		usersStorage: usersStorage,
+		cacheStorage: cacheStorage,
 	}
 }
 

@@ -65,7 +65,7 @@ func (s *SigninHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(mm_errors.JwtCreationError.Error(), sl.Err(err))
 		api.Respond(w, r, http.StatusInternalServerError, api.ErrResponse{
-			Err: mm_errors.DecodeError.Error(),
+			Err: mm_errors.JwtCreationError.Error(),
 		})
 
 		return

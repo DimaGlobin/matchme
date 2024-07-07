@@ -56,7 +56,7 @@ func New(log *slog.Logger, srv *service.Service) func(next http.Handler) http.Ha
 			}
 
 			ctx := context.WithValue(r.Context(), UserIdKey, claims.UserId)
-			ctx = context.WithValue(r.Context(), UserRoleKey, claims.UserRole)
+			ctx = context.WithValue(ctx, UserRoleKey, claims.UserRole)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}

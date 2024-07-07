@@ -1,32 +1,24 @@
 package ratings_storage
 
 import (
-	"github.com/jmoiron/sqlx"
+	"github.com/DimaGlobin/matchme/internal/model"
+	"github.com/DimaGlobin/matchme/internal/storage/storage_errors"
+	"gorm.io/gorm"
 )
 
 type RatingsPostgres struct {
-	db *sqlx.DB
+	db *gorm.DB
 }
 
-func NewRatingsPostgres(db *sqlx.DB) *RatingsPostgres {
+func NewRatingsPostgres(db *gorm.DB) *RatingsPostgres {
 	return &RatingsPostgres{db: db}
 }
 
-func (r *RatingsPostgres) AddLike(likingId, likedId uint64) (uint64, error) {
-	var id uint64
-
-	query := `
-	INSERT INTO likes (liking_id, liked_id)
-	VALUES ($1, $2)
-	RETURNING like_id;
-	`
-	row := r.db.QueryRow(query, likingId, likedId)
-
-	if err := row.Scan(&id); err != nil {
-		return 0, err
+func (r *RatingsPostgres) AddLike(like *model.Like) (uint64, error) {
+	if err := r.db.Create(like).Error; err != nil {
+		return 0, storage_errors.ProcessPostgresError(err)
 	}
-
-	return id, nil
+	return like.LikedId, nil
 }
 
 func (r *RatingsPostgres) GetAllLikes(userId uint64) ([]uint64, error) {
@@ -34,84 +26,66 @@ func (r *RatingsPostgres) GetAllLikes(userId uint64) ([]uint64, error) {
 	query := `
 	SELECT liking_id 
 	FROM likes 
-	WHERE liked_id=$1 
-		AND liking_id NOT IN (
-			SELECT disliked_id 
-			FROM dislikes 
-			WHERE disliking_id=$1
-		)
+	WHERE liked_id = ? 
+	AND liking_id NOT IN (
+		SELECT disliked_id 
+		FROM dislikes 
+		WHERE disliking_id = ?
+	)
 	`
 
-	rows, err := r.db.Query(query, userId)
+	rows, err := r.db.Raw(query, userId, userId).Rows()
 	if err != nil {
-		return nil, err
+		return nil, storage_errors.ProcessPostgresError(err)
 	}
 	defer rows.Close()
+
 	for rows.Next() {
 		var id uint64
 		if err := rows.Scan(&id); err != nil {
-			return nil, err
+			return nil, storage_errors.ProcessPostgresError(err)
 		}
-
 		ids = append(ids, id)
 	}
-
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, storage_errors.ProcessPostgresError(err)
 	}
 
 	return ids, nil
 }
 
-func (r *RatingsPostgres) AddDislike(dislikingId, dislikedId uint64) (uint64, error) {
-	var id uint64
-
-	query := "INSERT INTO dislikes (disliking_id, disliked_id) values ($1, $2) RETURNING dislike_id"
-	row := r.db.QueryRow(query, dislikingId, dislikedId)
-
-	if err := row.Scan(&id); err != nil {
-		return 0, err
+func (r *RatingsPostgres) AddDislike(dislike *model.Dislike) (uint64, error) {
+	if err := r.db.Create(dislike).Error; err != nil {
+		return 0, storage_errors.ProcessPostgresError(err)
 	}
-
-	return id, nil
+	return dislike.Id, nil
 }
 
-func (r *RatingsPostgres) AddMatch(userId1, userId2 uint64) (uint64, error) {
-	var id uint64
-	query := "INSERT INTO matches (user1, user2) values ($1, $2) RETURNING match_id"
-	row := r.db.QueryRow(query, userId1, userId2)
-
-	if err := row.Scan(&id); err != nil {
-		return 0, err
+func (r *RatingsPostgres) AddMatch(match *model.Match) (uint64, error) {
+	if err := r.db.Create(match).Error; err != nil {
+		return 0, storage_errors.ProcessPostgresError(err)
 	}
-
-	return id, nil
+	return match.MatchId, nil
 }
 
 func (r *RatingsPostgres) CheckLikeExistance(likingId, likedId uint64) (bool, error) {
-	var count uint
-	query := "SELECT COUNT(*) FROM likes where liking_id=$1 AND liked_id=$2"
-	if err := r.db.Get(&count, query, likedId, likingId); err != nil { //swap users because i want to check if match happened
-		return false, err
+	var count int64
+	if err := r.db.Model(&model.Like{}).
+		Where("liking_id = ? AND liked_id = ?", likedId, likingId).
+		Count(&count).Error; err != nil {
+		return false, storage_errors.ProcessPostgresError(err)
 	}
 
-	if count == 0 {
-		return false, nil
-	}
-
-	return true, nil
+	return count > 0, nil
 }
 
 func (r *RatingsPostgres) CheckDislikeExistance(dislikingId, dislikedId uint64) (bool, error) {
-	var count uint
-	query := "SELECT COUNT(*) FROM likes where liking_id=$1 AND liked_id=$2"
-	if err := r.db.Get(&count, query, dislikedId, dislikingId); err != nil {
-		return false, err
+	var count int64
+	if err := r.db.Model(&model.Dislike{}).
+		Where("disliking_id = ? AND disliked_id = ?", dislikedId, dislikingId).
+		Count(&count).Error; err != nil {
+		return false, storage_errors.ProcessPostgresError(err)
 	}
 
-	if count == 0 {
-		return false, nil
-	}
-
-	return true, nil
+	return count > 0, nil
 }

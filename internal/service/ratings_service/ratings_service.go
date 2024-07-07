@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	like    = "like"
-	dislike = "dislike"
+	likeStr    = "like"
+	dislikeStr = "dislike"
 
 	basicRole   = "basic"
 	adminRole   = "admin"
@@ -45,7 +45,13 @@ func (r *RatingsService) GetAllLikes(userId uint64) ([]uint64, error) {
 }
 
 func (r *RatingsService) AddLike(subjectId, objectId uint64, subjectRole string) (*model.LikeResp, error) {
-	id, err := r.ratingsStorage.AddLike(subjectId, objectId)
+
+	like := model.Like{
+		LikingId: subjectId,
+		LikedId:  objectId,
+	}
+
+	id, err := r.ratingsStorage.AddLike(&like)
 	if err != nil {
 		return nil, err
 	}
@@ -72,20 +78,25 @@ func (r *RatingsService) AddLike(subjectId, objectId uint64, subjectRole string)
 
 	if !exist {
 		return &model.LikeResp{
-			ReactionType: like,
+			ReactionType: likeStr,
 			ReactionId:   id,
 			MatchId:      0,
 			LikesLeft:    likesLeft,
 		}, err
 	}
 
-	matchId, err := r.ratingsStorage.AddMatch(subjectId, objectId)
+	match := model.Match{
+		User1Id: subjectId,
+		User2Id: objectId,
+	}
+
+	matchId, err := r.ratingsStorage.AddMatch(&match)
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.LikeResp{
-		ReactionType: like,
+		ReactionType: likeStr,
 		ReactionId:   id,
 		MatchId:      matchId,
 		LikesLeft:    likesLeft,
@@ -93,13 +104,19 @@ func (r *RatingsService) AddLike(subjectId, objectId uint64, subjectRole string)
 }
 
 func (r *RatingsService) AddDislike(subjectId, objectId uint64) (*model.DislikeResp, error) {
-	id, err := r.ratingsStorage.AddDislike(subjectId, objectId)
+
+	dislike := model.Dislike{
+		DislikingId: subjectId,
+		DislikedId:  objectId,
+	}
+
+	id, err := r.ratingsStorage.AddDislike(&dislike)
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.DislikeResp{
-		ReactionType: dislike,
+		ReactionType: dislikeStr,
 		ReactionId:   id,
 	}, err
 }

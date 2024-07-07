@@ -6,8 +6,8 @@ import (
 	"github.com/DimaGlobin/matchme/internal/storage/files_storage"
 	"github.com/DimaGlobin/matchme/internal/storage/ratings_storage"
 	"github.com/DimaGlobin/matchme/internal/storage/users_storage"
-	"github.com/jmoiron/sqlx"
 	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 type Storage struct {
@@ -18,7 +18,7 @@ type Storage struct {
 	cache_storage.CacheStorage
 }
 
-func NewStorage(db *sqlx.DB, minioClient *files_storage.MinioClient, rdb *redis.Client) *Storage {
+func NewStorage(db *gorm.DB, minioClient *files_storage.MinioClient, rdb *redis.Client) *Storage {
 	return &Storage{
 		UsersStorage:     users_storage.NewUsersPostgres(db),
 		FilesStorage:     files_storage.NewFilesMinio(minioClient),

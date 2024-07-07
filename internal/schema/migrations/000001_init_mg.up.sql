@@ -15,6 +15,7 @@ CREATE TABLE users (
     role user_role DEFAULT 'basic',
     max_age INTEGER NOT NULL,
     creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -- last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     -- radius integer not null default 100,
     -- last_ip varchar(255),
     -- latitude float,

@@ -17,7 +17,6 @@ type IdResponse struct {
 
 type TokenResponse struct {
 	Token string `json:"token"`
-	Msg   string `json:"msg"`
 }
 
 func Respond(w http.ResponseWriter, r *http.Request, code int, v interface{}) {

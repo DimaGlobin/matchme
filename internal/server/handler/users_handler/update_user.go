@@ -53,6 +53,8 @@ func (s *UpdateUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// fmt.Println("Updates: ", updates)
+
 	if err := updates.Valid(); err != nil {
 		msg := "Invalid request body"
 		log.Error(msg)
