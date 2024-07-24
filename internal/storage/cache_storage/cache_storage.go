@@ -16,6 +16,9 @@ type CacheRedis struct {
 	rdb *redis.Client
 }
 
+// я бы реализацию сервера, кеша, репозитория поменял на MustInit и тд
+// в чём смысл что-то подгружать, если у нас что-то упало, правильно?
+
 func NewCacheRedis(rdb *redis.Client) *CacheRedis {
 	return &CacheRedis{
 		rdb: rdb,

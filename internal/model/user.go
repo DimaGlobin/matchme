@@ -13,6 +13,10 @@ const (
 	female = "female"
 )
 
+// ps. заметил, что много повторяющихся полей в структурах... если сделать "основные структуры" и можно
+// спокойно их переиспользовать.
+
+// срочно разбить эту струтура и использовать embedding
 type User struct {
 	Id           uint64    `json:"-" gorm:"primaryKey;column:user_id"`
 	Email        string    `json:"email" binding:"required" gorm:"column:email"`

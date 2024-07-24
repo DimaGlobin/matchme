@@ -16,5 +16,5 @@ func (FileData) TableName() string {
 
 type File struct {
 	Name   string
-	Buffer []byte
+	Buffer []byte // публичное поле?
 }

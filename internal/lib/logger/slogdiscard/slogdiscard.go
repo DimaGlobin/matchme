@@ -6,6 +6,8 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+// вообще не понял, что это такое...
+
 func NewDiscardLogger() *slog.Logger {
 	return slog.New(NewDiscardHandler())
 }

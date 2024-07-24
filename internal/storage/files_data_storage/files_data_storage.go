@@ -9,6 +9,8 @@ type FilesPostgres struct {
 	db *gorm.DB
 }
 
+// заменить запросы на штучку squirrel -> легкая читаемость, низкий порог вхождения
+
 func NewFilesPostgres(db *gorm.DB) *FilesPostgres {
 	return &FilesPostgres{db: db}
 }

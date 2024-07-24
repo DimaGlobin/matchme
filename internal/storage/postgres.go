@@ -9,6 +9,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// cfg -> MustLoad, ; potsgresql -> MustLoad;
+
 func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
@@ -24,6 +26,8 @@ func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// может сразу упадём, если всё плохо?
 
 	if err = sqlDB.Ping(); err != nil {
 		return nil, err

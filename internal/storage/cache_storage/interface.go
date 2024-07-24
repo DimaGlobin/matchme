@@ -10,6 +10,7 @@ func (c CacheError) Error() string {
 	return string(c)
 }
 
+// почему здесь не завести отдельный файл с ошибками ?
 const (
 	NoValueInCache   CacheError = "There is no value with this key in cache"
 	CannotAddToCache CacheError = "Can't add value to cache"

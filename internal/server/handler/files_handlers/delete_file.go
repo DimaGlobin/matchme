@@ -12,6 +12,9 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+//  а обязательно ли везде передавать логгер, по-моему у него есть свойство быть глобальным!!!
+// если мы проинициализируем его всего один раз, могу ошибаться, поправь, если это не так
+
 type DeleteFileHandler struct {
 	logger  *slog.Logger
 	service *service.Service

@@ -29,6 +29,8 @@ TODO: init config
 TODO: init logger
 */
 
+// yaml -> path -> init -> var cfgPostgresPath ->
+
 // @title MatchMe API
 // @version 1.0
 // @description API Server for MatchMe application
@@ -63,6 +65,8 @@ func main() {
 		stdlog.Fatal("Cannot connect to db")
 	}
 
+	// get url
+
 	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s", cfg.UsersDBConfig.User, cfg.UsersDBConfig.Password, cfg.UsersDBConfig.Host, cfg.UsersDBConfig.Port, cfg.UsersDBConfig.DBName, cfg.UsersDBConfig.SSLMode)
 
 	cmd := exec.Command("migrate", "-path", "./internal/schema/migrations", "-database", dbURL, "up")
@@ -77,14 +81,12 @@ func main() {
 	if err != nil {
 		fmt.Println(cfg, err)
 		stdlog.Fatal("Cannot connect to files storage")
-		return
 	}
 
 	rdb, err := cache_storage.NewRedisDB(cfg)
 	if err != nil {
 		fmt.Println(cfg, err)
 		stdlog.Fatal("Cannot connect to cache storage")
-		return
 	}
 
 	fmt.Printf("rdb: %p\n", rdb)

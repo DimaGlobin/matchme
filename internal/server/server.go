@@ -9,13 +9,13 @@ import (
 )
 
 type Server struct {
-	HttpServer *http.Server
+	httpServer *http.Server
 }
 
 func NewHTTPServer(cfg *config.Config, router chi.Router) *Server {
 	var s Server
 
-	s.HttpServer = &http.Server{
+	s.httpServer = &http.Server{
 		Addr:           cfg.Address,
 		Handler:        router,
 		MaxHeaderBytes: 1 << 20, // 1 MB
@@ -27,10 +27,11 @@ func NewHTTPServer(cfg *config.Config, router chi.Router) *Server {
 	return &s
 }
 
+// зачем почему ...
 func (s *Server) Run() error {
-	return s.HttpServer.ListenAndServe()
+	return s.httpServer.ListenAndServe()
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
-	return s.HttpServer.Shutdown(ctx)
+	return s.httpServer.Shutdown(ctx)
 }
